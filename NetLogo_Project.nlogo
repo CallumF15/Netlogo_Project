@@ -1,5 +1,5 @@
 breed [ enemys enemy ]
-breed [ teams2 team2 ]
+breed [ teams team ]
 breed [ flags flag ]
 
 ;;;;;;;;;;;;;;;
@@ -9,16 +9,15 @@ breed [ flags flag ]
 globals[
   
  action       ;; Last button pressed. (Include if we want user to play)
- 
  dead?        ;; is the A.I dead?
  lives        ;; how many lifes left
  time-left    ;; time remaining to end of game
-  
 ]
 
 turtles-own[
  speed
  time 
+ state ;; defines what kind of behaviour the turtle has e.g Alert, capturing flag, defending flag
 ]
 
 ;;;;;;;;;;;;;;;;;;;;;;;;
@@ -31,6 +30,7 @@ setup-patches
 setup-turtles
 reset-ticks
 end 
+
 to go
   ;;set spawns
   ;;set flags
@@ -100,6 +100,81 @@ to setup-flags
 
 end
 
+to set-state
+  
+  ask teams[
+  ifelse(any? other turtles in-radius 2)[  ;;if other turtles (which will be the enemy team) are near player, the player's state is set to evade
+     set state "evade"
+  ][
+    set state "run"
+   ]
+  ]
+ 
+  
+  
+ 
+  
+  ;; default state is standing/walking/running?
+  ;; other states: Capturing flag, Defending flag, Defending Capturer, Jailed, evade, run
+  
+end
+  
+to move
+  
+;;;;;;;;;;;;;;;;;;;;
+;;FLAG STATE TYPES;;
+;;;;;;;;;;;;;;;;;;;;
+
+if(state = "capture")
+[
+  ;;player has flag
+  ;;move towards direction of own teams flag 
+]
+
+if(state = "defendflag")
+[
+ ;;determine which turtle teammates will remain back to defend flag
+]
+
+if(state = "defendcapturer")
+[
+;;other turtle teammates nearby will defend flag holder 
+]
+
+if(state = "lostflag")
+[
+  ;;team on alert trying to locate flag taker (soon as it's took, some move back to flag default location to find taker)
+]
+
+;;;;;;;;;;;;;;;;;;;;;;;;
+;;MOVEMENT STATE TYPES;;
+;;;;;;;;;;;;;;;;;;;;;;;;
+
+if(state = "evade")[
+  ;;move in direction the chaser is facing and move?
+  fd speed;
+] 
+
+if(state = "run")[
+  set speed speed = 2
+]
+
+if(state = "walk")[
+  set speed speed = 1
+]
+
+if(state = "rescue")
+[
+ ;;save teamate from jail (be aimed at defenders or whoever is near the cell)
+]
+
+if(state = "jail")
+[
+ ;;cannot do anything, await rescue 
+]
+  
+ 
+end
 
 @#$#@#$#@
 GRAPHICS-WINDOW
