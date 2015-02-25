@@ -6,17 +6,18 @@ breed [ flags flag ]
 ;; Variables ;;
 ;;;;;;;;;;;;;;;
 
-globals[
-  
+globals [
  action       ;; Last button pressed. (Include if we want user to play)
  dead?        ;; is the A.I dead?
  lives        ;; how many lifes left
  time-left    ;; time remaining to end of game
+ navmesh
+ navmesh-colored?
 ]
 
-turtles-own[
+turtles-own [
  speed
- time 
+ time
  state ;; defines what kind of behaviour the turtle has e.g Alert, capturing flag, defending flag
 ]
 
@@ -25,165 +26,230 @@ turtles-own[
 ;;;;;;;;;;;;;;;;;;;;;;;;
 
 to setup
-clear-all
-setup-patches
-setup-turtles
-reset-ticks
-end 
+  clear-all
+
+  setup-patches
+  setup-turtles
+
+  setup-navmesh
+  set navmesh-colored? false
+
+  reset-ticks
+end
+
+to setup-patches
+  ask patches [ set pcolor green ]
+end
+
+to setup-turtles
+  create-turtles player-count [
+    set shape "arrow"     ;;set shape to arrow
+  ]
+
+  let index 0
+
+  ask turtles [
+    ifelse (index < player-count / 2) [
+      set color blue
+      set xcor 14
+      set ycor 8 + index
+    ] [
+      set color red
+      set xcor xcor / 4
+      set ycor 5
+    ]
+
+    set index index + 1
+  ]
+end
+
+to setup-flags
+  ask flags [
+    set shape "flag"
+  ]
+
+  ask flag 1 [
+    set color red
+    set xcor 2
+    set ycor 10
+  ]
+
+  ask flag 2 [
+    set color blue
+    set xcor 14
+    set ycor 10
+  ]
+end
+
+to setup-navmesh
+  ;; Stub
+  let obstacles n-of obstacle-count-stub patches
+  ask obstacles [
+    set pcolor black
+  ]
+
+  set navmesh []
+
+  let x 0
+  repeat max-pxcor + 1 [
+    let vertical-slab (list sort patches with [ pxcor = x ])
+    let y max-pycor
+    let segment-index 0
+
+    foreach first vertical-slab [ ;; for each patch in vertical slab
+      ask ? [
+        if pcolor = black [
+          ;; make new segment with patches below obstacle
+          set vertical-slab lput (filter [ [ pycor ] of ? < y ] (last vertical-slab)) vertical-slab
+          
+          ;; remove obstacle and patches below it from segment
+          set vertical-slab replace-item segment-index vertical-slab filter [ [ pycor ] of ? > y ] (item segment-index vertical-slab)
+          
+          set segment-index segment-index + 1
+        ]
+      ]
+
+      set y y - 1
+    ]
+    
+    ;; remove empty segments
+    set vertical-slab filter [not empty? ?] vertical-slab
+    
+    ;; union segments
+    if x > 0 [
+      foreach vertical-slab [
+        let segment ?
+        let top-edge [ pycor ] of first ?
+        let bottom-edge [ pycor ] of last ?
+        let left-edge [ pxcor ] of first ?
+        let node-index 0
+        
+        foreach navmesh [
+          let node-top-edge [ pycor ] of first ?
+          let node-bottom-edge [ pycor ] of last ?
+          let node-right-edge [ pxcor ] of last ? + 1
+          
+          if node-top-edge = top-edge and node-bottom-edge = bottom-edge and node-right-edge = left-edge [
+            ;; add segment to ?
+            set navmesh replace-item node-index navmesh sort sentence ? segment
+            
+            ;; remove segment from vertical-slab
+            set vertical-slab remove segment vertical-slab
+          ]
+          
+          set node-index node-index + 1
+        ]
+      ]
+    ]
+
+    ;; add segments to navmesh
+    foreach vertical-slab [
+      set navmesh lput ? navmesh
+    ]
+
+    set x x + 1
+  ]
+end
 
 to go
   ;;set spawns
   ;;set flags
   ;;move players
-  
+
   tick
 end
 
-to setup-patches
-  ask patches [ set pcolor green ]
-end 
-
-to setup-turtles                
-  create-turtles player-count
-  
-  ask turtles[
-  set shape "arrow"     ;;set shape to arrow
-  ]
-  
-  let count-player 1
-
-  ask turtle count-player[
-    
-    if(count-player <= 5)
-    [ 
-      set color blue
-      set xcor 14
-      set ycor 8 + count-player 
-     ] 
-  
-   if(count-player >= 5)
-   [
-    set color red
-    set xcor xcor / 4 
-    set ycor 5
-   ]  
-   set count-player count-player + 1  ;;increment count
-  ]
-  
-end 
-
-to get-turtle-position[
- 
-
-]
-end
-
-
-to setup-flags
-  ask flags[
-   set shape "flag" 
-   
-   ask flag 1[
-    set color red
-    set xcor 2 
-    set ycor 10 
-   ]
-   
-   ask flag 2[
-    set color blue
-    set xcor 14
-    set ycor 10 
-   ]
-   
-   
-  ]
+to get-turtle-position
 
 end
 
 to set-state
-  
-  ask teams[
-  ifelse(any? other turtles in-radius 2)[  ;;if other turtles (which will be the enemy team) are near player, the player's state is set to evade
-     set state "evade"
-  ][
-    set state "run"
-   ]
+  ask teams [
+    ifelse (any? other turtles in-radius 2) [  ;;if other turtles (which will be the enemy team) are near player, the player's state is set to evade
+      set state "evade"
+    ] [
+      set state "run"
+    ]
   ]
- 
-  
-  
- 
-  
+
   ;; default state is standing/walking/running?
   ;; other states: Capturing flag, Defending flag, Defending Capturer, Jailed, evade, run
-  
 end
-  
+
 to move
-  
-;;;;;;;;;;;;;;;;;;;;
-;;FLAG STATE TYPES;;
-;;;;;;;;;;;;;;;;;;;;
+  ;;;;;;;;;;;;;;;;;;;;
+  ;;FLAG STATE TYPES;;
+  ;;;;;;;;;;;;;;;;;;;;
 
-if(state = "capture")
-[
-  ;;player has flag
-  ;;move towards direction of own teams flag 
-]
+  if (state = "capture") [
+    ;;player has flag
+    ;;move towards direction of own teams flag
+  ]
 
-if(state = "defendflag")
-[
- ;;determine which turtle teammates will remain back to defend flag
-]
+  if (state = "defendflag") [
+    ;;determine which turtle teammates will remain back to defend flag
+  ]
 
-if(state = "defendcapturer")
-[
-;;other turtle teammates nearby will defend flag holder 
-]
+  if (state = "defendcapturer") [
+    ;;other turtle teammates nearby will defend flag holder
+  ]
 
-if(state = "lostflag")
-[
-  ;;team on alert trying to locate flag taker (soon as it's took, some move back to flag default location to find taker)
-]
+  if (state = "lostflag") [
+    ;;team on alert trying to locate flag taker (soon as it's took, some move back to flag default location to find taker)
+  ]
 
-;;;;;;;;;;;;;;;;;;;;;;;;
-;;MOVEMENT STATE TYPES;;
-;;;;;;;;;;;;;;;;;;;;;;;;
+  ;;;;;;;;;;;;;;;;;;;;;;;;
+  ;;MOVEMENT STATE TYPES;;
+  ;;;;;;;;;;;;;;;;;;;;;;;;
 
-if(state = "evade")[
-  ;;move in direction the chaser is facing and move?
-  fd speed;
-] 
+  if (state = "evade") [
+    ;;move in direction the chaser is facing and move?
+    fd speed;
+  ]
 
-if(state = "run")[
-  set speed speed = 2
-]
+  if (state = "run") [
+    set speed speed = 2
+  ]
 
-if(state = "walk")[
-  set speed speed = 1
-]
+  if (state = "walk") [
+    set speed speed = 1
+  ]
 
-if(state = "rescue")
-[
- ;;save teamate from jail (be aimed at defenders or whoever is near the cell)
-]
+  if (state = "rescue") [
+    ;;save teamate from jail (be aimed at defenders or whoever is near the cell)
+  ]
 
-if(state = "jail")
-[
- ;;cannot do anything, await rescue 
-]
-  
- 
+  if (state = "jail") [
+    ;;cannot do anything, await rescue
+  ]
 end
 
+to toggle-color-navmesh
+  let node-colors ifelse-value navmesh-colored?
+   [ [ green ] ]
+   [ filter [ ? != black ] base-colors ]
+  let index 0
+  
+  foreach navmesh [
+    foreach ? [
+      ask ? [
+        set pcolor item index node-colors
+      ]
+    ]
+    
+    set index ifelse-value (index + 1 = length node-colors) [ 0 ] [ index + 1 ]
+  ]
+  
+  set navmesh-colored? not navmesh-colored?
+end
 @#$#@#$#@
 GRAPHICS-WINDOW
 276
 12
 715
 472
-16
-16
+-1
+-1
 13.0
 1
 10
@@ -194,12 +260,12 @@ GRAPHICS-WINDOW
 1
 1
 1
--16
-16
--16
-16
 0
+32
 0
+32
+1
+1
 1
 ticks
 30.0
@@ -216,7 +282,7 @@ NIL
 T
 OBSERVER
 NIL
-NIL
+S
 NIL
 NIL
 1
@@ -228,12 +294,12 @@ BUTTON
 43
 go
 go
-NIL
+T
 1
 T
 OBSERVER
 NIL
-NIL
+G
 NIL
 NIL
 1
@@ -252,6 +318,38 @@ player-count
 1
 NIL
 HORIZONTAL
+
+SLIDER
+21
+214
+193
+247
+obstacle-count-stub
+obstacle-count-stub
+0
+1024
+526
+1
+1
+NIL
+HORIZONTAL
+
+BUTTON
+22
+257
+173
+290
+NIL
+toggle-color-navmesh
+NIL
+1
+T
+OBSERVER
+NIL
+N
+NIL
+NIL
+1
 
 @#$#@#$#@
 ## WHAT IS IT?
