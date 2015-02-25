@@ -11,8 +11,6 @@ globals [
  dead?        ;; is the A.I dead?
  lives        ;; how many lifes left
  time-left    ;; time remaining to end of game
- navmesh
- navmesh-matrix
 ]
 
 turtles-own [
@@ -20,6 +18,8 @@ turtles-own [
  time
  state ;; defines what kind of behaviour the turtle has e.g Alert, capturing flag, defending flag
 ]
+
+__includes [ "navmesh.nls" ]
 
 ;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Setup Procedures ;;;
@@ -29,7 +29,7 @@ to setup
   clear-all
 
   setup-patches
-  
+
   ifelse navmesh-demo? [
     create-turtles 1
   ] [
@@ -83,103 +83,6 @@ to setup-flags
     set xcor 14
     set ycor 10
   ]
-end
-
-to setup-navmesh
-  ;; Stub
-  let obstacles n-of obstacle-count-stub patches
-  ask obstacles [
-    set pcolor black
-  ]
-
-  set navmesh []
-  set navmesh-matrix []
-
-  let x 0
-  let node-index 0
-  repeat max-pxcor + 1 [
-    let vertical-slab (list (list node-index sort patches with [ pxcor = x ]))
-    let y max-pycor
-    let segment-index 0
-    
-    set node-index node-index + 1
-
-    foreach last first vertical-slab [ ;; for each patch in vertical slab
-      ask ? [
-        if pcolor = black [
-          ;; make new segment with patches below obstacle
-          set vertical-slab lput (list node-index (filter [ [ pycor ] of ? < y ] (last last vertical-slab))) vertical-slab
-          
-          ;; remove obstacle and patches below it from segment
-          set vertical-slab replace-item segment-index vertical-slab (list (node-index - 1) filter [ [ pycor ] of ? > y ] last item segment-index vertical-slab)
-          
-          set segment-index segment-index + 1
-          set node-index node-index + 1
-        ]
-      ]
-        
-      set y y - 1
-    ]
-    
-    ;; remove empty segments
-    set vertical-slab filter [ not empty? last ? ] vertical-slab
-    
-    ;; union segments and add entries to adjacency matrix
-    ifelse x > 0 [
-      foreach vertical-slab [
-        let segment-id first ?
-        let segment last ?
-        let top-edge [ pycor ] of first segment
-        let bottom-edge [ pycor ] of last segment
-        let left-edge [ pxcor ] of first segment
-        
-        let hit false
-        
-        foreach filter [ [ pxcor ] of last last ? + 1 = left-edge and [ pycor ] of first last ? = top-edge and [ pycor ] of last last ? = bottom-edge ] navmesh [
-          ;; add segment to ?
-          set navmesh replace-item (position ? navmesh) navmesh (list first ? sort sentence last ? segment)
-          
-          ;; remove segment from vertical-slab
-          set vertical-slab remove (list segment-id segment) vertical-slab
-          
-          set hit true
-        ]
-        
-        if not hit [
-          set navmesh-matrix lput (list first ? []) navmesh-matrix
-          
-          let segment-adjacency-list first filter [ first ? = segment-id ] navmesh-matrix
-          
-          ;; add entries to adjacency matrix
-          foreach filter [ [ pxcor ] of last last ? + 1 = left-edge and ([ pycor ] of first last ? >= top-edge and [ pycor ] of last last ? <= bottom-edge) or ([ pycor ] of first last ? <= top-edge and [ pycor ] of last last ? >= bottom-edge) ] navmesh [
-            let node-id first ?
-            let node-adjacency-list first filter [ first ? = node-id ] navmesh-matrix
-            
-            let segment-position position segment-adjacency-list navmesh-matrix
-            set segment-adjacency-list replace-item 1 segment-adjacency-list lput node-id last segment-adjacency-list    
-            set navmesh-matrix replace-item segment-position navmesh-matrix segment-adjacency-list
-            
-            let node-position position node-adjacency-list navmesh-matrix
-            set node-adjacency-list replace-item 1 node-adjacency-list lput segment-id last node-adjacency-list
-            set navmesh-matrix replace-item node-position navmesh-matrix node-adjacency-list
-          ]
-        ]
-      ]
-    ] [
-      foreach vertical-slab [
-        set navmesh-matrix lput (list first ? []) navmesh-matrix
-      ]
-    ]
-
-    ;; add segments to navmesh
-    foreach vertical-slab [
-      set navmesh lput ? navmesh
-    ]
-
-    set x x + 1
-  ]
-  
-  update-navmesh-display
 end
 
 to go
@@ -256,64 +159,6 @@ to move
     ;;cannot do anything, await rescue
   ]
 end
-
-to update-navmesh-display
-  toggle-color-navmesh
-  toggle-label-navmesh
-end
-
-to toggle-color-navmesh
-  let node-colors ifelse-value color-navmesh? [
-    filter [ ? != black ] base-colors
-  ] [
-    [ green ]
-  ]
-  let index 0
-  
-  foreach navmesh [
-    foreach last ? [
-      ask ? [
-        set pcolor item index node-colors
-      ]
-    ]
-    
-    set index ifelse-value (index + 1 = length node-colors) [ 0 ] [ index + 1 ]
-  ]
-end
-
-to toggle-label-navmesh
-  ifelse label-navmesh? [
-    foreach navmesh [
-      let node-label first ?
-      
-      foreach last ? [
-        ask ? [
-          set plabel node-label
-        ]
-      ]
-    ]
-  ] [
-    foreach navmesh [
-      foreach last ? [
-        ask ? [
-          set plabel ""
-        ]
-      ]
-    ]
-  ]
-end
-
-to output-navmesh
-  foreach navmesh [
-    output-show ?
-  ]
-end
-
-to output-navmesh-matrix
-  foreach navmesh-matrix [
-    output-show ?
-  ]
-end
 @#$#@#$#@
 GRAPHICS-WINDOW
 276
@@ -324,13 +169,13 @@ GRAPHICS-WINDOW
 -1
 13.0
 1
-10
+9
 1
 1
 1
 0
-1
-1
+0
+0
 1
 0
 32
@@ -400,7 +245,7 @@ obstacle-count-stub
 obstacle-count-stub
 0
 1024
-16
+100
 1
 1
 NIL
@@ -413,7 +258,7 @@ SWITCH
 323
 navmesh-demo?
 navmesh-demo?
-0
+1
 1
 -1000
 
@@ -431,7 +276,7 @@ SWITCH
 230
 color-navmesh?
 color-navmesh?
-1
+0
 1
 -1000
 
@@ -442,15 +287,15 @@ SWITCH
 279
 label-navmesh?
 label-navmesh?
-1
+0
 1
 -1000
 
 BUTTON
-19
-341
-142
-374
+787
+490
+910
+523
 NIL
 output-navmesh
 NIL
@@ -464,12 +309,29 @@ NIL
 1
 
 BUTTON
-13
-383
-175
-416
+925
+490
+1087
+523
 NIL
 output-navmesh-matrix
+NIL
+1
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
+1
+
+BUTTON
+1098
+491
+1198
+524
+NIL
+clear-output
 NIL
 1
 T
