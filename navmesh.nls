@@ -4,7 +4,7 @@ globals [
 ]
 
 to setup-navmesh
-  ;; Stub
+  ;; stub to populate world with obstacles
   let obstacles n-of obstacle-count-stub patches
   ask obstacles [
     set pcolor black
@@ -13,6 +13,7 @@ to setup-navmesh
   set navmesh []
   set navmesh-matrix []
 
+  ;; generate navmes and adjacency matrix
   let x 0
   let node-index 0
   repeat max-pxcor + 1 [
@@ -22,7 +23,8 @@ to setup-navmesh
 
     set node-index node-index + 1
 
-    foreach last first vertical-slab [ ;; for each patch in vertical slab
+    ;; scan vertical slab
+    foreach last first vertical-slab [
       ask ? [
         if pcolor = black [
           ;; make new segment with patches below obstacle
@@ -42,7 +44,6 @@ to setup-navmesh
     ;; remove empty segments
     set vertical-slab filter [ not empty? last ? ] vertical-slab
 
-    ;; union segments and add entries to adjacency matrix
     ifelse x > 0 [
       foreach vertical-slab [
         let segment-id first ?
@@ -52,10 +53,15 @@ to setup-navmesh
         let left-edge [ pxcor ] of first segment
 
         let hit false
+        let neighboring-nodes filter [ [ pxcor ] of last last ? + 1 = left-edge ] navmesh
 
-        foreach filter [ [ pxcor ] of last last ? + 1 = left-edge and [ pycor ] of first last ? = top-edge and [ pycor ] of last last ? = bottom-edge ] navmesh [
-          ;; add segment to ?
-          set navmesh replace-item (position ? navmesh) navmesh (list first ? sort sentence last ? segment)
+        ;; union segments
+        let union-node filter [ [ pycor ] of first last ? = top-edge and [ pycor ] of last last ? = bottom-edge ] neighboring-nodes
+        if not empty? union-node [
+          set union-node first union-node
+          
+          ;; add segment to union-node
+          set navmesh replace-item (position union-node navmesh) navmesh (list first union-node sort sentence last union-node segment)
 
           ;; remove segment from vertical-slab
           set vertical-slab remove (list segment-id segment) vertical-slab
@@ -68,8 +74,9 @@ to setup-navmesh
 
           let segment-adjacency-list first filter [ first ? = segment-id ] navmesh-matrix
 
-          ;; add entries to adjacency matrix
-          foreach filter [ [ pxcor ] of last last ? + 1 = left-edge and ([ pycor ] of first last ? >= top-edge and [ pycor ] of last last ? <= bottom-edge) or ([ pycor ] of first last ? <= top-edge and [ pycor ] of last last ? >= bottom-edge) ] navmesh [
+          ;; add entiries to adjacency matrix
+          let adjacent-nodes filter [ [ pycor ] of first last ? >= bottom-edge and [ pycor ] of last last ? <= top-edge ] neighboring-nodes
+          foreach adjacent-nodes [
             let node-id first ?
             let node-adjacency-list first filter [ first ? = node-id ] navmesh-matrix
 
