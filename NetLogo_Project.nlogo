@@ -1,5 +1,4 @@
-breed [ enemys enemy ]
-breed [ teams team ]
+breed [ players player ]
 breed [ flags flag ]
 
 ;;;;;;;;;;;;;;;
@@ -7,19 +6,21 @@ breed [ flags flag ]
 ;;;;;;;;;;;;;;;
 
 globals [
- action       ;; Last button pressed. (Include if we want user to play)
- dead?        ;; is the A.I dead?
- lives        ;; how many lifes left
- time-left    ;; time remaining to end of game
+  action       ;; Last button pressed. (Include if we want user to play)
+  dead?        ;; is the A.I dead?
+  lives        ;; how many lifes left
+  time-left    ;; time remaining to end of game
 ]
 
-turtles-own [
- speed
- time
- state ;; defines what kind of behaviour the turtle has e.g Alert, capturing flag, defending flag
+players-own [
+  team
+  speed
+  time
+  state ;; defines what kind of behaviour the turtle has e.g Alert, capturing flag, defending flag
+  path
 ]
 
-__includes [ "navmesh.nls" ]
+__includes [ "navmesh.nls" "pathfinding.nls" ]
 
 ;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Setup Procedures ;;;
@@ -29,61 +30,57 @@ to setup
   clear-all
 
   setup-patches
-
-  ifelse navmesh-demo? [
-    create-turtles 1
-  ] [
-    setup-turtles
-  ]
-
+  setup-players  
+  setup-flags
   setup-navmesh
+  setup-pathfinding
+  
+  if navmesh-demo? [
+    setup-navmesh-demo
+  ]
 
   reset-ticks
 end
+
+
 
 to setup-patches
   ask patches [ set pcolor green ]
 end
 
-to setup-turtles
-  create-turtles player-count [
-    set shape "arrow"     ;;set shape to arrow
+
+
+to setup-players
+  create-players player-count [
+    setxy random-xcor random-ycor
+    set shape "person"
+    set color blue
   ]
-
-  let index 0
-
-  ask turtles [
-    ifelse (index < player-count / 2) [
-      set color blue
-      set xcor 14
-      set ycor 8 + index
-    ] [
-      set color red
-      set xcor xcor / 4
-      set ycor 5
-    ]
-
-    set index index + 1
+  
+  create-players player-count [
+    setxy random-xcor random-ycor
+    set shape "person"
+    set color red
   ]
 end
+
+
 
 to setup-flags
-  ask flags [
+  create-flags 1 [
+    setxy 14 10
     set shape "flag"
-  ]
-
-  ask flag 1 [
-    set color red
-    set xcor 2
-    set ycor 10
-  ]
-
-  ask flag 2 [
     set color blue
-    set xcor 14
-    set ycor 10
+  ]
+  
+  create-flags 1 [
+    setxy 2 10
+    set shape "flag"
+    set color red
   ]
 end
+
+
 
 to go
   ;;set spawns
@@ -95,22 +92,26 @@ to go
   tick
 end
 
+
+
 to get-turtle-position
 
 end
 
+
+
 to set-state
-  ask teams [
-    ifelse (any? other turtles in-radius 2) [  ;;if other turtles (which will be the enemy team) are near player, the player's state is set to evade
+;  ask teams [
+    ifelse (any? other turtles in-radius 2) [  ;;if other turtles (which will be the enemy team) are near player, the player's state is set to evde
       set state "evade"
     ] [
-      set state "run"
-    ]
-  ]
+      set state "run"   ]
 
   ;; default state is standing/walking/running?
   ;; other states: Capturing flag, Defending flag, Defending Capturer, Jailed, evade, run
 end
+
+
 
 to move
   ;;;;;;;;;;;;;;;;;;;;
@@ -245,20 +246,20 @@ obstacle-count-stub
 obstacle-count-stub
 0
 1024
-100
+10
 1
 1
 NIL
 HORIZONTAL
 
 SWITCH
-83
-290
-229
-323
+91
+439
+237
+472
 navmesh-demo?
 navmesh-demo?
-1
+0
 1
 -1000
 

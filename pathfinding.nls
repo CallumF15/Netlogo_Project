@@ -1,0 +1,84 @@
+;; search node structure: [<node-id> <parent-node> <g-cost> <h-cost>]
+
+globals [
+  heuristic
+]
+
+to setup-pathfinding
+  set heuristic task manhattan-distance
+end
+
+
+
+to-report get-path [ #source-patch #destination-patch ]
+  let source-id containing-node #source-patch
+  let destination-id containing-node #destination-patch
+  
+  ;; return an empty path if one of the patches aren't found
+  if source-id = -1 or destination-id = -1 [
+    report []
+  ]
+  
+  let source-node (list source-id -1 0 (runresult heuristic source-id destination-id))
+  
+  ;; conduct search
+  let agenda (list source-node)
+  let prune []
+  while [ not empty? agenda ] [
+    ;; get node from agenda
+    set agenda sort-by [ item 2 ?1 + item 3 ?1 < item 2 ?2 + item 3 ?2 ] agenda
+    let node first agenda
+    set agenda but-first agenda
+    
+    ;; add node to prune list
+    set prune lput first node prune
+    
+    ;; check if node is destination
+    ifelse first node = destination-id [
+      let new-path construct-path node
+      output-show (word "goal: " destination-id " path: " new-path)
+      report new-path
+    ] [
+      ;; get adjacent nodes
+      let adjacent-nodes map [ (list ? node ((item 2 node) + 1) (runresult heuristic ? destination-id)) ] adjacency-list first node
+      
+      ;; add nodes to agenda
+      set agenda sentence agenda filter [ not member? first ? prune and not member? ? agenda ] adjacent-nodes
+    ]
+  ]
+  
+  ;; no path found
+  report []
+end
+
+
+
+to-report construct-path [ #node ]
+  let node #node
+  let constructed-path (list first node)
+  
+  while [ item 1 node != -1 ] [
+    set node item 1 node
+    set constructed-path fput first node constructed-path
+  ]
+  
+  report constructed-path
+end
+
+
+
+to-report real-cost [ #node #goal ]
+  let node nodexy #node
+  let goal nodexy #goal
+  
+  report sqrt((abs first node - first goal) ^ 2 + (abs last node - last goal) ^ 2)
+end
+
+
+
+to-report manhattan-distance [ #node #goal ]
+  let node nodexy #node
+  let goal nodexy #goal
+  
+  report (abs first node - first goal) + (abs last node - last goal)
+end
