@@ -1,5 +1,7 @@
 ;; search node structure: [<node-id> <parent-node> <g-cost> <h-cost>]
 
+;; TODO: perform string pulling on path
+
 globals [
   heuristic
 ]
@@ -10,9 +12,9 @@ end
 
 
 
-to-report get-path [ #source-patch #destination-patch ]
+to-report get-path [ #source-patch #goal-patch ]
   let source-id containing-node #source-patch
-  let destination-id containing-node #destination-patch
+  let destination-id containing-node #goal-patch
   
   ;; return an empty path if one of the patches aren't found
   if source-id = -1 or destination-id = -1 [
@@ -35,9 +37,7 @@ to-report get-path [ #source-patch #destination-patch ]
     
     ;; check if node is destination
     ifelse first node = destination-id [
-      let new-path construct-path node
-      output-show (word "goal: " destination-id " path: " new-path)
-      report new-path
+      report construct-path node #source-patch #goal-patch
     ] [
       ;; get adjacent nodes
       let adjacent-nodes map [ (list ? node ((item 2 node) + 1) (runresult heuristic ? destination-id)) ] adjacency-list first node
@@ -53,23 +53,33 @@ end
 
 
 
-to-report construct-path [ #node ]
+to-report construct-path [ #node #start #end ]
   let node #node
-  let constructed-path (list first node)
+  let node-list (list first node)
   
   while [ item 1 node != -1 ] [
     set node item 1 node
-    set constructed-path fput first node constructed-path
+    set node-list fput first node node-list
   ]
   
-  report constructed-path
+  let point-list (list [ (list pxcor pycor) ] of #start )
+  
+  let index 0
+  while [ index + 1 < length node-list ] [
+    set point-list lput get-edge-midpoint item index node-list item (index + 1) node-list point-list
+    set index index + 1
+  ]
+  
+  set point-list lput [ (list pxcor pycor) ] of #end point-list
+  
+  report point-list
 end
 
 
 
 to-report real-cost [ #node #goal ]
-  let node nodexy #node
-  let goal nodexy #goal
+  let node get-centre #node
+  let goal get-centre #goal
   
   report sqrt((abs first node - first goal) ^ 2 + (abs last node - last goal) ^ 2)
 end
@@ -77,8 +87,8 @@ end
 
 
 to-report manhattan-distance [ #node #goal ]
-  let node nodexy #node
-  let goal nodexy #goal
+  let node get-centre #node
+  let goal get-centre #goal
   
   report (abs first node - first goal) + (abs last node - last goal)
 end

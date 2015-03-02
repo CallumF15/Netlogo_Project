@@ -6,16 +6,6 @@ globals [
   navmesh-matrix
 ]
 
-to setup-navmesh-demo
-  create-players 1 [
-    set color blue
-    set shape "person"
-    set path get-path patch-here one-of patches
-  ]
-end
-
-
-
 to setup-navmesh
   ;; stub to populate world with obstacles
   let obstacles n-of obstacle-count-stub patches
@@ -114,7 +104,7 @@ end
 
 
 
-to-report nodexy [ #node ]
+to-report get-centre [ #node ]
   ifelse #node < 0 or #node >= length navmesh [
     report []
   ] [
@@ -127,6 +117,91 @@ to-report nodexy [ #node ]
     ]
     
     report map [ ? / length item #node navmesh ] (list x y)
+  ]
+end
+
+
+
+to-report get-edge-midpoint [ #node1 #node2 ]
+  ifelse #node1 < 0 or #node1 >= length navmesh or #node2 < 0 or #node2 >= length navmesh [
+    report [ 0 0 ]
+  ] [
+    let node1 item #node1 navmesh
+    let node2 item #node2 navmesh
+    
+    let top-edge-1 filter [ [ pycor ] of ? = [ pycor ] of first node1 ] node1
+    let bottom-edge-1 filter [ [ pycor ] of ? = [ pycor ] of last node1 ] node1
+    let left-edge-1 filter [ [ pxcor ] of ? = [ pxcor ] of first node1 ] node1
+    let right-edge-1 filter [ [ pxcor ] of ? = [ pxcor ] of last node1 ] node1
+    
+    let top-edge-2 filter [ [ pycor ] of ? = [ pycor ] of first node2 ] node2
+    let bottom-edge-2 filter [ [ pycor ] of ? = [ pycor ] of last node2 ] node2
+    let left-edge-2 filter [ [ pxcor ] of ? = [ pxcor ] of first node2 ] node2
+    let right-edge-2 filter [ [ pxcor ] of ? = [ pxcor ] of last node2 ] node2
+    
+    let shared-edge []
+    let orientation "horizontal"
+    
+    let x 0
+    let y 0
+    
+    ifelse [ pycor ] of first top-edge-1 < [ pycor ] of first bottom-edge-2 [
+      ;; node1 is bellow node2
+      set y ([ pycor ] of first top-edge-1 + 0.5 + [ pycor ] of first bottom-edge-2 - 0.5) / 2
+      set shared-edge (list top-edge-1 bottom-edge-2)
+    ] [
+      ifelse [ pycor ] of first top-edge-2 < [ pycor ] of first bottom-edge-1 [
+        ;; node2 is bellow node1
+        set y ([ pycor ] of first top-edge-2 + 0.5 + [ pycor ] of first bottom-edge-1 - 0.5) / 2
+        set shared-edge (list top-edge-2 bottom-edge-1)
+      ] [
+        set orientation "edge"
+      
+        ifelse [ pxcor ] of first left-edge-1 > [ pxcor ] of first right-edge-2 [
+          ;; node1 is to the right of node2
+          set x ([ pxcor ] of first left-edge-1 + 0.5 + [ pxcor ] of first bottom-edge-2 - 0.5) / 2
+          set shared-edge (list left-edge-1 right-edge-2)
+        ] [
+          ;; node2 is to the right of node1
+          set x ([ pxcor ] of first left-edge-2 + 0.5 + [ pxcor ] of first bottom-edge-1 - 0.5) / 2
+          set shared-edge (list left-edge-2 right-edge-1)
+        ]
+      ]
+    ]
+    
+    ifelse orientation = "horizontal" [
+      let edge-set []
+      foreach first shared-edge [
+        let x1 [ pxcor ] of ?
+        
+        foreach last shared-edge [
+          let x2 [ pxcor ] of ?
+          
+          if x1 = x2 [
+            set edge-set lput x1 edge-set
+          ]
+        ]
+      ]
+      
+      set x (min edge-set + max edge-set) / 2
+    ] [
+      let edge-set []
+      foreach first shared-edge [
+        let y1 [ pycor ] of ?
+        
+        foreach last shared-edge [
+          let y2 [ pycor ] of ?
+          
+          if y1 = y2 [
+            set edge-set lput y1 edge-set
+          ]
+        ]
+      ]
+      
+      set y (min edge-set + max edge-set) / 2
+    ]
+    
+    report (list x y)
   ]
 end
 

@@ -17,10 +17,11 @@ players-own [
   speed
   time
   state ;; defines what kind of behaviour the turtle has e.g Alert, capturing flag, defending flag
+  target
   path
 ]
 
-__includes [ "navmesh.nls" "pathfinding.nls" ]
+__includes [ "navmesh.nls" "pathfinding.nls" "navigation demo.nls" ]
 
 ;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Setup Procedures ;;;
@@ -30,13 +31,14 @@ to setup
   clear-all
 
   setup-patches
-  setup-players  
-  setup-flags
   setup-navmesh
   setup-pathfinding
-  
-  if navmesh-demo? [
-    setup-navmesh-demo
+
+  ifelse navigation-demo? [
+    setup-navigation-demo
+  ] [
+    setup-players
+    setup-flags
   ]
 
   reset-ticks
@@ -182,8 +184,8 @@ GRAPHICS-WINDOW
 32
 0
 32
-1
-1
+0
+0
 1
 ticks
 30.0
@@ -246,7 +248,7 @@ obstacle-count-stub
 obstacle-count-stub
 0
 1024
-10
+250
 1
 1
 NIL
@@ -255,10 +257,10 @@ HORIZONTAL
 SWITCH
 91
 439
-237
+245
 472
-navmesh-demo?
-navmesh-demo?
+navigation-demo?
+navigation-demo?
 0
 1
 -1000
@@ -277,7 +279,7 @@ SWITCH
 230
 color-navmesh?
 color-navmesh?
-0
+1
 1
 -1000
 
@@ -288,7 +290,7 @@ SWITCH
 279
 label-navmesh?
 label-navmesh?
-0
+1
 1
 -1000
 
@@ -334,6 +336,23 @@ BUTTON
 NIL
 clear-output
 NIL
+1
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
+1
+
+BUTTON
+93
+492
+185
+525
+NIL
+select-goal
+T
 1
 T
 OBSERVER

@@ -1,0 +1,78 @@
+breed [ points point ]
+
+to setup-navigation-demo
+  create-players 1 [
+    set color blue
+    set shape "person"
+    set target one-of patches
+    set path get-path patch-here target
+
+    ifelse not empty? path [
+      output-show (word "goal: " containing-node target " path: " path)
+    ] [
+      output-show (word "goal: " containing-node target " No path found")
+    ]
+  ]
+  
+  draw-path
+end
+
+
+
+to draw-path      
+  ask points [ die ]
+  clear-links
+        
+  let point-list []
+  ask players [
+    set point-list path
+  ]
+  
+  let previous-point false
+  foreach point-list [
+    create-points 1 [
+      setxy first ? last ?
+      set shape "dot"
+      set color black
+      
+      if previous-point != false [
+        create-link-with previous-point [
+          set color red
+        ]
+      ]
+      
+      set previous-point self
+    ]
+  ]
+end
+
+
+
+to select-goal
+  if navigation-demo? [
+    if mouse-inside? [
+      ask patch mouse-xcor mouse-ycor [
+        sprout 1 [
+          set shape "square"
+          die
+        ]
+      ]
+      
+      if mouse-down? [
+        ask players [
+          set target patch mouse-xcor mouse-ycor
+          set path get-path patch-here target
+          
+          ifelse not empty? path [
+            output-show (word "goal: " containing-node target " path: " path)
+          ] [
+            output-show (word "goal: " containing-node target " No path found")
+          ]
+        ]
+        
+        draw-path
+        stop
+      ]
+    ]
+  ]
+end
