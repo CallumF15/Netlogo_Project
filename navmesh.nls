@@ -122,88 +122,53 @@ end
 
 
 
-to-report get-edge-midpoint [ #node1 #node2 ]
-  ifelse #node1 < 0 or #node1 >= length navmesh or #node2 < 0 or #node2 >= length navmesh [
-    report [ 0 0 ]
+to-report get-edge [ #node-1 #node-2 ]
+  ifelse #node-1 < 0 or #node-1 >= length navmesh or #node-2 < 0 or #node-2 >= length navmesh [
+    report [ -1 -1 ]
   ] [
-    let node1 item #node1 navmesh
-    let node2 item #node2 navmesh
+    let node-1 item #node-1 navmesh
+    let node-2 item #node-2 navmesh
     
-    let top-edge-1 filter [ [ pycor ] of ? = [ pycor ] of first node1 ] node1
-    let bottom-edge-1 filter [ [ pycor ] of ? = [ pycor ] of last node1 ] node1
-    let left-edge-1 filter [ [ pxcor ] of ? = [ pxcor ] of first node1 ] node1
-    let right-edge-1 filter [ [ pxcor ] of ? = [ pxcor ] of last node1 ] node1
+    let left-edge-1 filter [ [ pxcor ] of ? = [ pxcor ] of first node-1 ] node-1
+    let right-edge-1 filter [ [ pxcor ] of ? = [ pxcor ] of last node-1 ] node-1
     
-    let top-edge-2 filter [ [ pycor ] of ? = [ pycor ] of first node2 ] node2
-    let bottom-edge-2 filter [ [ pycor ] of ? = [ pycor ] of last node2 ] node2
-    let left-edge-2 filter [ [ pxcor ] of ? = [ pxcor ] of first node2 ] node2
-    let right-edge-2 filter [ [ pxcor ] of ? = [ pxcor ] of last node2 ] node2
+    let left-edge-2 filter [ [ pxcor ] of ? = [ pxcor ] of first node-2 ] node-2
+    let right-edge-2 filter [ [ pxcor ] of ? = [ pxcor ] of last node-2 ] node-2
     
+    let x []
     let shared-edge []
-    let orientation "horizontal"
     
-    let x 0
-    let y 0
-    
-    ifelse [ pycor ] of first top-edge-1 < [ pycor ] of first bottom-edge-2 [
-      ;; node1 is bellow node2
-      set y ([ pycor ] of first top-edge-1 + 0.5 + [ pycor ] of first bottom-edge-2 - 0.5) / 2
-      set shared-edge (list top-edge-1 bottom-edge-2)
+    ifelse [ pxcor ] of first left-edge-1 > [ pxcor ] of first right-edge-2 [
+      ;; node-1 is to the right of node-2
+      set x ([ pxcor ] of first left-edge-1 + 0.5 + [ pxcor ] of first right-edge-2 - 0.5) / 2
+      set shared-edge (list left-edge-1 right-edge-2)
     ] [
-      ifelse [ pycor ] of first top-edge-2 < [ pycor ] of first bottom-edge-1 [
-        ;; node2 is bellow node1
-        set y ([ pycor ] of first top-edge-2 + 0.5 + [ pycor ] of first bottom-edge-1 - 0.5) / 2
-        set shared-edge (list top-edge-2 bottom-edge-1)
-      ] [
-        set orientation "edge"
+      ;; node-2 is to the right of node-1
+      set x ([ pxcor ] of first left-edge-2 + 0.5 + [ pxcor ] of first right-edge-1 - 0.5) / 2
+      set shared-edge (list left-edge-2 right-edge-1)
+    ]
+    
+    let ys []
+    
+    foreach first shared-edge [
+      let y1 [ pycor ] of ?
       
-        ifelse [ pxcor ] of first left-edge-1 > [ pxcor ] of first right-edge-2 [
-          ;; node1 is to the right of node2
-          set x ([ pxcor ] of first left-edge-1 + 0.5 + [ pxcor ] of first bottom-edge-2 - 0.5) / 2
-          set shared-edge (list left-edge-1 right-edge-2)
-        ] [
-          ;; node2 is to the right of node1
-          set x ([ pxcor ] of first left-edge-2 + 0.5 + [ pxcor ] of first bottom-edge-1 - 0.5) / 2
-          set shared-edge (list left-edge-2 right-edge-1)
+      foreach last shared-edge [
+        let y2 [ pycor ] of ?
+        
+        if y1 = y2 [
+          set ys lput y1 ys
         ]
       ]
     ]
     
-    ifelse orientation = "horizontal" [
-      let edge-set []
-      foreach first shared-edge [
-        let x1 [ pxcor ] of ?
-        
-        foreach last shared-edge [
-          let x2 [ pxcor ] of ?
-          
-          if x1 = x2 [
-            set edge-set lput x1 edge-set
-          ]
-        ]
-      ]
-      
-      set x (min edge-set + max edge-set) / 2
-    ] [
-      let edge-set []
-      foreach first shared-edge [
-        let y1 [ pycor ] of ?
-        
-        foreach last shared-edge [
-          let y2 [ pycor ] of ?
-          
-          if y1 = y2 [
-            set edge-set lput y1 edge-set
-          ]
-        ]
-      ]
-      
-      set y (min edge-set + max edge-set) / 2
-    ]
+    set ys sort ys
+    let y (list (first ys - 0.5) (last ys + 0.5))
     
-    report (list x y)
+    report (list (list x first y) (list x last y))
   ]
 end
+
 
 
 
@@ -240,71 +205,4 @@ end
 to update-navmesh-display
   toggle-color-navmesh
   toggle-label-navmesh
-end
-
-
-
-to toggle-color-navmesh
-  let node-colors ifelse-value color-navmesh? [
-    filter [ ? != black ] base-colors
-  ] [
-    [ green ]
-  ]
-  let index 0
-
-  foreach navmesh [
-    foreach ? [
-      ask ? [
-        set pcolor item index node-colors
-      ]
-    ]
-
-    set index ifelse-value (index + 1 = length node-colors) [ 0 ] [ index + 1 ]
-  ]
-end
-
-
-
-to toggle-label-navmesh
-  ifelse label-navmesh? [
-    let node-label 0
-    
-    foreach navmesh [
-      foreach ? [
-        ask ? [
-          set plabel node-label
-        ]
-      ]
-      
-      set node-label node-label + 1
-    ]
-  ] [
-    foreach navmesh [
-      foreach ? [
-        ask ? [
-          set plabel ""
-        ]
-      ]
-    ]
-  ]
-end
-
-
-
-to output-navmesh
-  let index 0
-  foreach navmesh [
-    output-show (word index ": " ?)
-    set index index + 1
-  ]
-end
-
-
-
-to output-navmesh-matrix
-  let index 0
-  foreach navmesh-matrix [
-    output-show (word index ": " ?)
-    set index index + 1
-  ]
 end

@@ -21,7 +21,7 @@ players-own [
   path
 ]
 
-__includes [ "navmesh.nls" "pathfinding.nls" "navigation demo.nls" ]
+__includes [ "navmesh.nls" "pathfinding.nls" "navigation.nls" "navigation demo.nls" ]
 
 ;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Setup Procedures ;;;
@@ -248,7 +248,7 @@ obstacle-count-stub
 obstacle-count-stub
 0
 1024
-250
+251
 1
 1
 NIL

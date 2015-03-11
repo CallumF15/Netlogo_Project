@@ -76,3 +76,70 @@ to select-goal
     ]
   ]
 end
+
+
+
+to toggle-color-navmesh
+  let node-colors ifelse-value color-navmesh? [
+    filter [ ? != black ] base-colors
+  ] [
+    [ green ]
+  ]
+  let index 0
+
+  foreach navmesh [
+    foreach ? [
+      ask ? [
+        set pcolor item index node-colors
+      ]
+    ]
+
+    set index ifelse-value (index + 1 = length node-colors) [ 0 ] [ index + 1 ]
+  ]
+end
+
+
+
+to toggle-label-navmesh
+  ifelse label-navmesh? [
+    let node-label 0
+    
+    foreach navmesh [
+      foreach ? [
+        ask ? [
+          set plabel node-label
+        ]
+      ]
+      
+      set node-label node-label + 1
+    ]
+  ] [
+    foreach navmesh [
+      foreach ? [
+        ask ? [
+          set plabel ""
+        ]
+      ]
+    ]
+  ]
+end
+
+
+
+to output-navmesh
+  let index 0
+  foreach navmesh [
+    output-show (word index ": " ?)
+    set index index + 1
+  ]
+end
+
+
+
+to output-navmesh-matrix
+  let index 0
+  foreach navmesh-matrix [
+    output-show (word index ": " ?)
+    set index index + 1
+  ]
+end
