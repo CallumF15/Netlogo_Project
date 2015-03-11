@@ -1,0 +1,118 @@
+
+
+to move-evade
+  
+  let playerList players
+  
+  ask playerList[
+    
+    set playerDirection heading
+    
+    ;;move in opposite direction of chaser, whilst trying to get to capture point
+    
+    let teamDirection heading
+    let directionOffset 10
+    
+      ifelse(random heading > playerDirection + directionOffset)
+      [
+         let c random heading 
+         set heading c
+      ][ if(random heading < playerDirection - directionOffset)
+      [
+        let d random heading
+        set heading d
+      ]
+      ]
+  ]
+end
+
+to  flag-pickup
+
+  let redFlagPosX 0
+  let redFlagPosY 0
+  let blueFlagPosX 0
+  let blueFlagPosY 0
+  
+  let bluePlayerPosX 0
+  let bluePlayerPosY 0
+  let redPlayerPosX 0
+  let redPlayerPosY 0
+  
+  ask flags with [color = red][
+    set redFlagPosX xcor 
+    set redFlagPosY ycor
+  ]
+  
+  ask flags with [color = blue][
+    set blueFlagPosX xcor 
+    set blueFlagPosY ycor
+  ]
+
+   ask players with [color = blue][
+    set bluePlayerPosX xcor
+    set bluePlayerPosY ycor 
+    
+    ask flags with [color = red] in-radius 2[
+       setxy bluePlayerPosX bluePlayerPosY
+     ]
+   ]
+   
+   ask players with [color = red][
+    set redPlayerPosX xcor
+    set redPlayerPosY ycor 
+    
+    ask flags with [color = blue] in-radius 2[
+       setxy redPlayerPosX redPlayerPosY ;;red team picked up flag
+    ]
+   ]
+
+end
+
+to flag-capture
+  
+  let blueHasFlag "false"
+  let redHasFlag "false"
+
+  if(blueHasFlag = "true")[
+     if(redHasFlag = "false")[
+    
+    
+       ask flags with [color = blue] in-radius 2[
+         ;;flag captured
+         respawn-flags
+       ]
+     ]
+  ]
+
+  if(redHasFlag = "true")[
+    if(blueHasFlag = "false")[
+      
+       ask flags with [color = red] in-radius 2[
+         ;;flag captured
+         respawn-flags
+       ]
+    ]
+  ]
+  
+  
+end
+
+to respawn-flags
+
+let blueCaptured "false"
+let redCaptured "false"
+
+if(blueCaptured = "true")[
+  set Score1 Score1 + 1
+  
+  ask flags with [color = red][
+   die
+  ]
+   ;;create flag
+]
+
+if(redCaptured = "true")[
+  set Score2 Score2 + 1
+]
+  
+end

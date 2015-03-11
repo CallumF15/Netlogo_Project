@@ -13,15 +13,18 @@ globals [
 ]
 
 players-own [
+  Score1
+  Score2
   team
   speed
   time
   state ;; defines what kind of behaviour the turtle has e.g Alert, capturing flag, defending flag
   target
   path
+  playerDirection
 ]
 
-__includes [ "navmesh.nls" "pathfinding.nls" "navigation demo.nls" ]
+__includes [ "navmesh.nls" "pathfinding.nls" "navigation demo.nls" "flagRelated.nls"]
 
 ;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Setup Procedures ;;;
