@@ -199,10 +199,3 @@ to-report adjacency-list [ #node ]
     report item #node navmesh-matrix
   ]
 end
-
-
-
-to update-navmesh-display
-  toggle-color-navmesh
-  toggle-label-navmesh
-end

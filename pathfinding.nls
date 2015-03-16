@@ -1,4 +1,5 @@
 ;; search node structure: [<node-id> <parent-node> <g-cost> <h-cost>]
+;; path structure: [[<xcor> <ycor>] ...]
 
 globals [
   heuristic
@@ -68,16 +69,17 @@ to-report construct-path [ #node #start #end ]
     set index index + 1
   ]
   
-  let point-list (list [ (list pxcor pycor) ] of #start)
-  
-  foreach edge-list [
-    set point-list lput (list ((first first ? + first last ?) / 2) ((last first ? + last last ?) / 2)) point-list
+  ifelse smooth-path? [
+    report string-pulling edge-list [ (list pxcor pycor) ] of #start [ (list pxcor pycor) ] of #end
+  ] [
+    let point-list (list [ (list pxcor pycor) ] of #start)
+    
+    foreach edge-list [
+      set point-list lput (list ((first first ? + first last ?) / 2) ((last first ? + last last ?) / 2)) point-list
+    ]
+    
+    report lput [ (list pxcor pycor) ] of #end point-list
   ]
-  
-  set point-list lput [ (list pxcor pycor) ] of #end point-list
-  
-  report string-pulling edge-list first point-list last point-list
-  report point-list
 end
 
 
@@ -98,8 +100,7 @@ to-report string-pulling [ #edges #start #end ]
     set index index - 1
   ]
   
-  set smoothed-path fput #start smoothed-path
-  report smoothed-path
+  report fput #start smoothed-path
 end
 
 

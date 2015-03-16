@@ -1,2 +1,15 @@
-;; TODO: write function to get a player to follow it's path
-
+;; Called on agent
+to follow-path
+  if empty? path [ stop ]
+  
+  let goal first path
+  
+  if (abs (xcor - first goal)) < player-speed and (abs (ycor - last goal)) < player-speed [
+    set path but-first path
+    if empty? path [ stop ]
+    set goal first path
+  ]
+  
+  facexy first goal last goal
+  forward player-speed
+end

@@ -10,11 +10,11 @@ globals [
   dead?        ;; is the A.I dead?
   lives        ;; how many lifes left
   time-left    ;; time remaining to end of game
+  score1       ;; Team 1's score
+  score2       ;; Team 2's score
 ]
 
 players-own [
-  Score1
-  Score2
   team
   speed
   time
@@ -93,6 +93,10 @@ to go
   ;;move players
 
   update-navmesh-display
+  
+  ask players [
+    follow-path
+  ]
 
   tick
 end
@@ -259,9 +263,9 @@ HORIZONTAL
 
 SWITCH
 91
-439
+365
 245
-472
+398
 navigation-demo?
 navigation-demo?
 0
@@ -349,13 +353,67 @@ NIL
 1
 
 BUTTON
-93
-492
-185
-525
+158
+452
+250
+485
 NIL
 select-goal
 T
+1
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
+1
+
+SWITCH
+19
+408
+163
+441
+smooth-path?
+smooth-path?
+0
+1
+-1000
+
+SLIDER
+10
+94
+182
+127
+player-speed
+player-speed
+0
+1
+0.05
+0.001
+1
+NIL
+HORIZONTAL
+
+SWITCH
+24
+451
+143
+484
+draw-path?
+draw-path?
+0
+1
+-1000
+
+BUTTON
+20
+494
+118
+527
+NIL
+output-path
+NIL
 1
 T
 OBSERVER

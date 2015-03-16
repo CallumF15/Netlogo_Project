@@ -6,12 +6,6 @@ to setup-navigation-demo
     set shape "person"
     set target one-of patches
     set path get-path patch-here target
-
-    ifelse not empty? path [
-      output-show (word "goal: " containing-node target " path: " path)
-    ] [
-      output-show (word "goal: " containing-node target " No path found")
-    ]
   ]
   
   draw-path
@@ -19,7 +13,9 @@ end
 
 
 
-to draw-path      
+to draw-path
+  if not draw-path? [ stop ]
+  
   ask points [ die ]
   clear-links
         
@@ -62,12 +58,6 @@ to select-goal
         ask players [
           set target patch mouse-xcor mouse-ycor
           set path get-path patch-here target
-          
-          ifelse not empty? path [
-            output-show (word "goal: " containing-node target " path: " path)
-          ] [
-            output-show (word "goal: " containing-node target " No path found")
-          ]
         ]
         
         draw-path
@@ -75,6 +65,13 @@ to select-goal
       ]
     ]
   ]
+end
+
+
+
+to update-navmesh-display
+  toggle-color-navmesh
+  toggle-label-navmesh
 end
 
 
@@ -141,5 +138,17 @@ to output-navmesh-matrix
   foreach navmesh-matrix [
     output-show (word index ": " ?)
     set index index + 1
+  ]
+end
+
+
+
+to output-path
+  ask players [
+    ifelse not empty? path [
+      output-show (word "goal: " containing-node target " path: " path)
+    ] [
+    output-show (word "goal: " containing-node target " No path found")
+    ]
   ]
 end
