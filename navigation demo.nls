@@ -14,10 +14,10 @@ end
 
 
 to draw-path
-  if not draw-path? [ stop ]
-  
   ask points [ die ]
   clear-links
+  
+  if not draw-path? [ stop ]
         
   let point-list []
   ask players [
