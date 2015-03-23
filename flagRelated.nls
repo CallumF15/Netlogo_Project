@@ -103,7 +103,7 @@ let blueCaptured "false"
 let redCaptured "false"
 
 if(blueCaptured = "true")[
-  set Score1 Score1 + 1
+  set blue-score blue-score + 1
   
   ask flags with [color = red][
    die
@@ -112,7 +112,7 @@ if(blueCaptured = "true")[
 ]
 
 if(redCaptured = "true")[
-  set Score2 Score2 + 1
+  set red-score red-score + 1
 ]
   
 end

@@ -10,8 +10,9 @@ globals [
   dead?        ;; is the A.I dead?
   lives        ;; how many lifes left
   time-left    ;; time remaining to end of game
-  score1       ;; Team 1's score
-  score2       ;; Team 2's score
+  red-score       ;; Team 1's score
+  blue-score       ;; Team 2's score
+  winning-score    ;; Score required to win
 ]
 
 players-own [
@@ -24,7 +25,7 @@ players-own [
   playerDirection
 ]
 
-__includes [ "navmesh.nls" "pathfinding.nls" "navigation.nls" "navigation demo.nls" "flagRelated.nls"]
+__includes [ "navmesh.nls" "pathfinding.nls" "navigation.nls" "navigation demo.nls" "flagRelated.nls" "scoreRelated.nls"]
 
 ;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Setup Procedures ;;;
@@ -167,6 +168,7 @@ to move
 
   if (state = "jail") [
     ;;cannot do anything, await rescue
+    set speed speed = 0
   ]
 end
 @#$#@#$#@
@@ -766,7 +768,7 @@ Polygon -7500403 true true 270 75 225 30 30 225 75 270
 Polygon -7500403 true true 30 75 75 30 270 225 225 270
 
 @#$#@#$#@
-NetLogo 5.1.0
+NetLogo 5.2-RC2
 @#$#@#$#@
 @#$#@#$#@
 @#$#@#$#@
