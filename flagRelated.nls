@@ -1,31 +1,4 @@
 
-
-to move-evade
-  
-  let playerList players
-  
-  ask playerList[
-    
-    set playerDirection heading
-    
-    ;;move in opposite direction of chaser, whilst trying to get to capture point
-    
-    let teamDirection heading
-    let directionOffset 10
-    
-      ifelse(random heading > playerDirection + directionOffset)
-      [
-         let c random heading 
-         set heading c
-      ][ if(random heading < playerDirection - directionOffset)
-      [
-        let d random heading
-        set heading d
-      ]
-      ]
-  ]
-end
-
 to  flag-pickup
 
   let redFlagPosX 0

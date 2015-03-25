@@ -1,5 +1,6 @@
 breed [ players player ]
 breed [ flags flag ]
+breed [ prisons prison ]
 
 ;;;;;;;;;;;;;;;
 ;; Variables ;;
@@ -23,9 +24,10 @@ players-own [
   target
   path
   playerDirection
+  in-prisoned
 ]
 
-__includes [ "navmesh.nls" "pathfinding.nls" "navigation.nls" "navigation demo.nls" "flagRelated.nls" "scoreRelated.nls"]
+__includes [ "navmesh.nls" "pathfinding.nls" "navigation.nls" "navigation demo.nls" "flagRelated.nls" "scoreRelated.nls" "stateRelated.nls"]
 
 ;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Setup Procedures ;;;
@@ -43,6 +45,7 @@ to setup
   ] [
     setup-players
     setup-flags
+    setup-prisons
   ]
 
   reset-ticks
@@ -86,6 +89,25 @@ to setup-flags
   ]
 end
 
+to setup-prisons
+  
+create-prisons 1[
+ setxy 2 15
+ set shape "square 2"
+ set color blue 
+]
+
+create-prisons 1[
+
+ setxy 14 15
+ set shape "square"
+ set color red 
+]
+  
+  
+  
+end
+
 
 
 to go
@@ -111,19 +133,58 @@ end
 
 
 to set-state
-;  ask teams [
-    ifelse (any? other turtles in-radius 2) [  ;;if other turtles (which will be the enemy team) are near player, the player's state is set to evde
-      set state "evade"
-    ] [
-      set state "run"   ]
-
+    ;;below checks if enemies are in radius of player
+     ;;sets player to jail if enemy is too close
+     
+    ask players with [color = blue][  
+      ifelse(any? other turtles in-radius 2)[ ;;if enemies in radius of player, player will evade else continues to run
+        set state "evade"
+      ][ set state "run" ]
+      
+      if(any? other players with [color = red] in-radius .2)[ ;;if enemy hits player, go to jail
+        set in-prisoned players
+        set state "jail"
+      ]
+      
+      ask prisons with [color = red][
+       if(any? other players with[color = red] in-radius 1) ;;if teammate near prison, player in prison is free
+       [
+        ;;need to remove player from prison
+        set state "freed" 
+       ] 
+      ]
+      
+      ;;need to pick 2 random players to defend
+    ]
+    
+    ask players with [color = red][
+      ifelse(any? other turtles in-radius 2)[
+         set state "evade"
+      ][ set state "run" ]
+      
+      if(any? other players with [color = blue] in-radius .2)[
+        set in-prisoned players
+        set state "jail"
+      ]
+      
+      ask prisons with [color = blue][
+       if(any? other players with[color = red] in-radius 1)
+       [
+        ;;need to remove player from prison
+        set state "freed" 
+       ] 
+      ]
+    ]
+    
+    flag-pickup ;;checks to see if any players picked up flag
+    
   ;; default state is standing/walking/running?
   ;; other states: Capturing flag, Defending flag, Defending Capturer, Jailed, evade, run
 end
 
 
 
-to move
+to check-state
   ;;;;;;;;;;;;;;;;;;;;
   ;;FLAG STATE TYPES;;
   ;;;;;;;;;;;;;;;;;;;;
@@ -139,6 +200,7 @@ to move
 
   if (state = "defendcapturer") [
     ;;other turtle teammates nearby will defend flag holder
+    defend-capturer
   ]
 
   if (state = "lostflag") [
@@ -151,16 +213,13 @@ to move
 
   if (state = "evade") [
     ;;move in direction the chaser is facing and move?
-    fd speed;
+    move-evade
   ]
 
   if (state = "run") [
     set speed speed = 2
   ]
 
-  if (state = "walk") [
-    set speed speed = 1
-  ]
 
   if (state = "rescue") [
     ;;save teamate from jail (be aimed at defenders or whoever is near the cell)
@@ -169,6 +228,12 @@ to move
   if (state = "jail") [
     ;;cannot do anything, await rescue
     set speed speed = 0
+    inprison-player
+  ]
+  
+    if(state = "freed")[
+    ;;teammate rescued player
+    free-player
   ]
 end
 @#$#@#$#@
@@ -270,7 +335,7 @@ SWITCH
 398
 navigation-demo?
 navigation-demo?
-0
+1
 1
 -1000
 

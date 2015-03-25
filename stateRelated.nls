@@ -3,6 +3,8 @@
 
 to inprison-player
   
+    ;;need to get prison location
+  
     let redprisonX 0
     let redprisonY 0
     let blueprisonX 0
@@ -85,6 +87,7 @@ to move-evade
       ]
   ]
 end
+
 
 to defend-capturer
   
