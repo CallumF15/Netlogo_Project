@@ -8,11 +8,11 @@ breed [ prisons prison ]
 
 globals [
   action       ;; Last button pressed. (Include if we want user to play)
-  dead?        ;; is the A.I dead?
+  jailed?        ;; is the A.I in jail?
   lives        ;; how many lifes left
   time-left    ;; time remaining to end of game
-  red-score       ;; Team 1's score
-  blue-score       ;; Team 2's score
+  red-score       ;; Red teams score
+  blue-score       ;; Blue teams score
   winning-score    ;; Score required to win
 ]
 
@@ -24,10 +24,9 @@ players-own [
   target
   path
   playerDirection
-  in-prisoned
 ]
 
-__includes [ "navmesh.nls" "pathfinding.nls" "navigation.nls" "navigation demo.nls" "flagRelated.nls" "scoreRelated.nls" "stateRelated.nls"]
+__includes [ "navmesh.nls" "pathfinding.nls" "navigation.nls" "navigation demo.nls" "flagRelated.nls" "scoreRelated.nls" "stateRelated.nls" ]
 
 ;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Setup Procedures ;;;
@@ -45,7 +44,6 @@ to setup
   ] [
     setup-players
     setup-flags
-    setup-prisons
   ]
 
   reset-ticks
@@ -89,25 +87,6 @@ to setup-flags
   ]
 end
 
-to setup-prisons
-  
-create-prisons 1[
- setxy 2 15
- set shape "square 2"
- set color blue 
-]
-
-create-prisons 1[
-
- setxy 14 15
- set shape "square"
- set color red 
-]
-  
-  
-  
-end
-
 
 
 to go
@@ -133,58 +112,19 @@ end
 
 
 to set-state
-    ;;below checks if enemies are in radius of player
-     ;;sets player to jail if enemy is too close
-     
-    ask players with [color = blue][  
-      ifelse(any? other turtles in-radius 2)[ ;;if enemies in radius of player, player will evade else continues to run
-        set state "evade"
-      ][ set state "run" ]
-      
-      if(any? other players with [color = red] in-radius .2)[ ;;if enemy hits player, go to jail
-        set in-prisoned players
-        set state "jail"
-      ]
-      
-      ask prisons with [color = red][
-       if(any? other players with[color = red] in-radius 1) ;;if teammate near prison, player in prison is free
-       [
-        ;;need to remove player from prison
-        set state "freed" 
-       ] 
-      ]
-      
-      ;;need to pick 2 random players to defend
-    ]
-    
-    ask players with [color = red][
-      ifelse(any? other turtles in-radius 2)[
-         set state "evade"
-      ][ set state "run" ]
-      
-      if(any? other players with [color = blue] in-radius .2)[
-        set in-prisoned players
-        set state "jail"
-      ]
-      
-      ask prisons with [color = blue][
-       if(any? other players with[color = red] in-radius 1)
-       [
-        ;;need to remove player from prison
-        set state "freed" 
-       ] 
-      ]
-    ]
-    
-    flag-pickup ;;checks to see if any players picked up flag
-    
+;  ask teams [
+    ifelse (any? other turtles in-radius 2) [  ;;if other turtles (which will be the enemy team) are near player, the player's state is set to evde
+      set state "evade"
+    ] [
+      set state "run"   ]
+
   ;; default state is standing/walking/running?
   ;; other states: Capturing flag, Defending flag, Defending Capturer, Jailed, evade, run
 end
 
 
 
-to check-state
+to move
   ;;;;;;;;;;;;;;;;;;;;
   ;;FLAG STATE TYPES;;
   ;;;;;;;;;;;;;;;;;;;;
@@ -200,7 +140,6 @@ to check-state
 
   if (state = "defendcapturer") [
     ;;other turtle teammates nearby will defend flag holder
-    defend-capturer
   ]
 
   if (state = "lostflag") [
@@ -213,7 +152,7 @@ to check-state
 
   if (state = "evade") [
     ;;move in direction the chaser is facing and move?
-    move-evade
+    fd speed;
   ]
 
   if (state = "run") [
@@ -228,12 +167,6 @@ to check-state
   if (state = "jail") [
     ;;cannot do anything, await rescue
     set speed speed = 0
-    inprison-player
-  ]
-  
-    if(state = "freed")[
-    ;;teammate rescued player
-    free-player
   ]
 end
 @#$#@#$#@
@@ -335,7 +268,7 @@ SWITCH
 398
 navigation-demo?
 navigation-demo?
-1
+0
 1
 -1000
 
@@ -833,7 +766,7 @@ Polygon -7500403 true true 270 75 225 30 30 225 75 270
 Polygon -7500403 true true 30 75 75 30 270 225 225 270
 
 @#$#@#$#@
-NetLogo 5.2-RC3
+NetLogo 5.2-RC2
 @#$#@#$#@
 @#$#@#$#@
 @#$#@#$#@
