@@ -8,7 +8,11 @@
  end
 
 
+<<<<<<< HEAD
 to imprison-player
+=======
+to inprison-player
+>>>>>>> origin/master
   
     let redprisonX 0
     let redprisonY 0
@@ -75,7 +79,11 @@ to free-player
 end
 
 
+<<<<<<< HEAD
 to check-state
+=======
+to move-evade ;;sets players direction to almost same direction as enemy to escape
+>>>>>>> origin/master
   
   let playerList players
   
@@ -102,8 +110,12 @@ to check-state
 end
 
 to defend-capturer
-  
+ 
+ 
   ask players with [color = blue][
+    if(state = "capture")[
+      
+    ]
     
     
     ;;check if any near by teamates

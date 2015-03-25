@@ -47,6 +47,11 @@ to setup
   ] [
     setup-players
     setup-flags
+<<<<<<< HEAD
+    setup-prisons
+    set-startGame-state
+=======
+>>>>>>> origin/master
   ]
 
   reset-ticks
@@ -73,8 +78,6 @@ to setup-players
     set color red
   ]
 end
-
-
 
 to setup-flags
   create-flags 1 [
@@ -106,31 +109,120 @@ to go
   tick
 end
 
-
-
 to get-turtle-position
 
 end
 
+to set-startGame-state
+  
+;;let bluePlayerCount count players with [color = blue]
+let redPlayerCount count players with [color = red]
+
+let half redPlayerCount / 2
+let redCounter 0
+let blueCounter 0
+ 
+ask players with [color = red]
+[
+  set redCounter redCounter + 1
+ 
+  ifelse(redCounter > half)[
+      set state "attackflag"
+  ][ set state "defendflag" ]
+]
+
+ask players with [color = blue]
+[
+  set blueCounter blueCounter + 1
+  ifelse(blueCounter > half)[
+      set state "attackflag"
+  ][ set state "defendflag" ]
+]
+  
+end
+
+
 
 
 to set-state
+<<<<<<< HEAD
+    ;;below checks if enemies are in radius of player
+     ;;sets player to jail if enemy is too close
+     
+     
+    ask players with [color = blue][  
+     if(state != "jail")[
+  
+      ifelse(any? other turtles in-radius 2)[ ;;if enemies in radius of player, player will evade else continues to run
+        set state "evade"
+      ][ set state "run" ]
+      
+       if(any? other players with [color = red] in-radius .2)[ ;;if enemy hits player, go to jail
+           set in-prisoned players
+          set state "jail"
+       ]
+     ]
+    ]
+    
+    ask players with [color = red][
+      if(state != "jail")[
+      ifelse(any? other turtles in-radius 2)[
+         set state "evade"
+      ][ set state "run" ]
+      
+       if(any? other players with [color = blue] in-radius .2)[
+        set in-prisoned players
+        set state "jail"
+       ]
+      ]
+    ]
+    
+    ;;below sets state to free if teammate is closeby
+    
+     ask prisons with [color = red][
+       if(any? other players with[color = red] in-radius 1) ;;if teammate near prison, player in prison is free
+       [
+        set state "freed" 
+       ] 
+      ]
+     
+     ask prisons with [color = blue][
+       if(any? other players with[color = red] in-radius 1)
+       [
+        set state "freed" 
+       ] 
+      ]
+    
+    flag-pickup ;;checks to see if any players picked up flag
+    
+=======
 ;  ask teams [
     ifelse (any? other turtles in-radius 2) [  ;;if other turtles (which will be the enemy team) are near player, the player's state is set to evde
       set state "evade"
     ] [
       set state "run"   ]
 
+>>>>>>> origin/master
   ;; default state is standing/walking/running?
   ;; other states: Capturing flag, Defending flag, Defending Capturer, Jailed, evade, run
 end
 
 
 
+<<<<<<< HEAD
+to check-state
+
+ ask players with [color = red and color = blue][
+   
+  if(state = "attackflag")[
+    ;;move attacker to flag
+  ]
+=======
 to move
   ;;;;;;;;;;;;;;;;;;;;
   ;;FLAG STATE TYPES;;
   ;;;;;;;;;;;;;;;;;;;;
+>>>>>>> origin/master
 
   if (state = "capture") [
     ;;player has flag
@@ -171,6 +263,7 @@ to move
     ;;cannot do anything, await rescue
     set speed speed = 0
   ]
+ ]
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
@@ -243,7 +336,11 @@ player-count
 player-count
 2
 8
+<<<<<<< HEAD
 8
+=======
+4
+>>>>>>> origin/master
 2
 1
 NIL
