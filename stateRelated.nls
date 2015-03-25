@@ -1,0 +1,103 @@
+
+
+
+to inprison-player
+  
+    let redprisonX 0
+    let redprisonY 0
+    let blueprisonX 0
+    let blueprisonY 0
+    
+    if(color = blue)[
+    ask players with [color = blue][
+      ask prisons with [color = red][
+        set redprisonX xcor
+        set redprisonY ycor
+      ]
+      setxy redprisonX redprisonY
+    ]
+    ]
+    
+    if(color = red)[
+    ask players with [color = red][
+      ask prisons with [color = blue][
+        set blueprisonX xcor
+        set blueprisonY ycor
+      ]
+      setxy blueprisonX blueprisonY
+    ]
+    ]
+  
+end
+
+to free-player
+  
+  let redPrisonX 0
+  let redPrisonY 0
+  
+  ask players with [ color = blue][
+   ask prisons with [color = red][
+      set redprisonX xcor
+      set redprisonY ycor
+    ]
+   
+    set xcor redprisonX - 3
+    set ycor redPrisonY 
+  ]
+  
+  let bluePrisonX 0
+  let bluePrisonY 0
+  
+  ask players with[color = red][
+    ask prisons with[color = blue][
+      set bluePrisonX xcor
+      set bluePrisonY ycor
+    ]
+    set xcor bluePrisonX + 3
+    set ycor bluePrisonY
+  ]
+  
+end
+
+
+to move-evade
+  
+  let playerList players
+  
+  ask playerList[
+    
+    set playerDirection heading
+    
+    ;;move in opposite direction of chaser, whilst trying to get to capture point
+    
+    let teamDirection heading
+    let directionOffset 10
+    
+      ifelse(random heading > playerDirection + directionOffset)
+      [
+         let c random heading 
+         set heading c
+      ][ if(random heading < playerDirection - directionOffset)
+      [
+        let d random heading
+        set heading d
+      ]
+      ]
+  ]
+end
+
+to defend-capturer
+  
+  ask players with [color = blue][
+    
+    
+    ;;check if any near by teamates
+    ;;if so, move to capturers position to defend
+  ]
+  
+  ask players with [color = red][
+   
+    
+  ]
+  
+end
