@@ -63,7 +63,7 @@ to setup-players
     set shape "person"
     set color blue
   ]
-  
+
   create-players player-count [
     setxy random-xcor random-ycor
     set shape "person"
@@ -79,7 +79,7 @@ to setup-flags
     set shape "flag"
     set color blue
   ]
-  
+
   create-flags 1 [
     setxy 2 10
     set shape "flag"
@@ -95,7 +95,7 @@ to go
   ;;move players
 
   update-navmesh-display
-  
+
   ask players [
     follow-path
   ]
@@ -297,7 +297,7 @@ SWITCH
 279
 label-navmesh?
 label-navmesh?
-1
+0
 1
 -1000
 
