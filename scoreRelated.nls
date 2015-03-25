@@ -7,11 +7,11 @@ to create-score
 end
 
 to check-victory  ;; adds a point to a team when the flag has been delivered.
-  if (color = blue and xcor = 0)
+  if (color = blue and xcor = 0 and ycor = 0)
   [
   set red-score red-score + 1
   ]
-  if (color = red and xcor = 0)
+  if (color = red and xcor = 0 and ycor = 0)
   [
     set blue-score blue-score + 1
   ]
@@ -19,15 +19,18 @@ to check-victory  ;; adds a point to a team when the flag has been delivered.
   if red-score = winning-score [red-victory] ;; checks for victory
 end
 
-to blue-victory ;; blue wins
+to blue-victory ;; blue wins, red loses
   print "blue wins"
+  print "red loses"
   end
 
-to red-victory  ;; red wins 
+to red-victory  ;; red wins, blue loses 
   print "red wins"
+  print "red loses"
   end
   
-  to reset 
+  to reset ;; reset all of the scores to zero. 
   set red-score 0
   set blue-score 0 
+  set winning-score 3
 end
