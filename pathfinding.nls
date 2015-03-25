@@ -21,11 +21,7 @@ to-report get-path [ #start #goal ]
     report []
   ]
   
-<<<<<<< Updated upstream
-  let source-node (list start -1 0 (runresult heuristic start goal-position) [ (list pxcor pycor) ] of #start)
-=======
   let source-node (list start -1 0 (runresult heuristic [ (list pxcor pycor) ] of #start goal-position) [ (list pxcor pycor) ] of #start)
->>>>>>> Stashed changes
   
   ;; conduct search
   let agenda (list source-node)
@@ -44,15 +40,8 @@ to-report get-path [ #start #goal ]
       report construct-path node #start #goal
     ] [
       ;; get adjacent nodes
-<<<<<<< Updated upstream
-;      let adjacent-nodes map [ (list ? node ((item 2 node) + real-cost item 4 node first node ? goal-position) (runresult heuristic ? goal-position) get-closest-point-on-line get-edge first node ? goal-position) ] adjacency-list first node
-      let adjacent-nodes map [ (list ? node get-closest-point-on-line get-edge first node ? goal-position) ] adjacency-list first node
-;      let adjacent-nodes map [ (list ? node ((item 2 node) + real-cost item 4 node first node ? goal-position) (manhattan-distance ? goal-position) get-closest-point-on-line get-edge first node ? goal-position) ] adjacency-list first node
-      set adjacent-nodes map [ sentence but-last ? (list (item 2 node + real-cost last ? first node first ? goal-position) (manhattan-distance last ? goal-position) last ?) ] adjacent-nodes
-=======
       let adjacent-nodes map [ (list ? node get-closest-point-on-line get-edge first node ? goal-position) ] adjacency-list first node
       set adjacent-nodes map [ sentence but-last ? (list (item 2 node + real-cost last ? first node first ? goal-position) (runresult heuristic last ? goal-position) last ?) ] adjacent-nodes
->>>>>>> Stashed changes
       ;; add nodes to agenda
       set agenda sentence agenda filter [ not member? first ? prune and not member? ? agenda ] adjacent-nodes
     ]
@@ -151,26 +140,11 @@ end
 to-report real-cost [ #start #node-1 #node-2 #goal ]
   let goal get-closest-point-on-line get-edge #node-1 #node-2 #goal
   
-<<<<<<< Updated upstream
-  let output (sqrt (((abs first #start - first goal) ^ 2) + ((abs last #start - last goal) ^ 2)))
-  output-show (word "g" #node-1 ":" #node-2 " - " output)
-  report output
-=======
   report (sqrt (((abs first #start - first goal) ^ 2) + ((abs last #start - last goal) ^ 2)))
->>>>>>> Stashed changes
 end
 
 
 
 to-report manhattan-distance [ #start #goal ]
-<<<<<<< Updated upstream
-;  let node get-centre #node
-  let node #start
-  
-  let output (abs (first node - first #goal) + abs (last node - last #goal))
-  output-show (word "h" #start " - " output)
-  report output
-=======
   report (abs (first #start - first #goal) + abs (last #start - last #goal))
->>>>>>> Stashed changes
 end
