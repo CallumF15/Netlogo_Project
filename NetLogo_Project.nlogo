@@ -14,6 +14,9 @@ globals [
   red-score       ;; Red teams score
   blue-score       ;; Blue teams score
   winning-score    ;; Score required to win
+  blue-prison      ;; blue prison occupancy
+  red-prison       ;; red prison occupancy
+  losing-score     ;; score required to lose
 ]
 
 players-own [
@@ -63,7 +66,7 @@ to setup-players
     set shape "person"
     set color blue
   ]
-
+  
   create-players player-count [
     setxy random-xcor random-ycor
     set shape "person"
@@ -79,7 +82,7 @@ to setup-flags
     set shape "flag"
     set color blue
   ]
-
+  
   create-flags 1 [
     setxy 2 10
     set shape "flag"
@@ -95,7 +98,7 @@ to go
   ;;move players
 
   update-navmesh-display
-
+  
   ask players [
     follow-path
   ]
@@ -239,8 +242,8 @@ SLIDER
 player-count
 player-count
 2
-100
-6
+8
+8
 2
 1
 NIL
@@ -255,7 +258,7 @@ obstacle-count-stub
 obstacle-count-stub
 0
 1024
-251
+286
 1
 1
 NIL
@@ -297,7 +300,7 @@ SWITCH
 279
 label-navmesh?
 label-navmesh?
-0
+1
 1
 -1000
 
@@ -388,9 +391,9 @@ SLIDER
 player-speed
 player-speed
 0
-1
-0.05
-0.001
+2
+1.5
+0.5
 1
 NIL
 HORIZONTAL
