@@ -1,9 +1,14 @@
 
+ to create-prisoncount
+   
+   set red-prison 0
+   set blue-prison 0
+   set losing-score 4
+ 
+ end
 
 
-to inprison-player
-  
-    ;;need to get prison location
+to imprison-player
   
     let redprisonX 0
     let redprisonY 0
@@ -17,6 +22,8 @@ to inprison-player
         set redprisonY ycor
       ]
       setxy redprisonX redprisonY
+     
+      set red-prison red-prison + 1
     ]
     ]
     
@@ -27,6 +34,8 @@ to inprison-player
         set blueprisonY ycor
       ]
       setxy blueprisonX blueprisonY
+     
+      set blue-prison blue-prison + 1
     ]
     ]
   
@@ -45,6 +54,8 @@ to free-player
    
     set xcor redprisonX - 3
     set ycor redPrisonY 
+    
+    set red-prison red-prison - 1
   ]
   
   let bluePrisonX 0
@@ -57,12 +68,14 @@ to free-player
     ]
     set xcor bluePrisonX + 3
     set ycor bluePrisonY
+    
+    set blue-prison blue-prison - 1
   ]
   
 end
 
 
-to move-evade
+to check-state
   
   let playerList players
   
@@ -88,7 +101,6 @@ to move-evade
   ]
 end
 
-
 to defend-capturer
   
   ask players with [color = blue][
@@ -102,5 +114,13 @@ to defend-capturer
    
     
   ]
+end
+
+to check-defeat
+  
+  if red-prison = losing-score [blue-victory]
+  if blue-prison = losing-score [red-victory]
+     
+    
   
 end
