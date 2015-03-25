@@ -46,6 +46,7 @@ to setup
     setup-players
     setup-flags
     setup-prisons
+    set-startGame-state
   ]
 
   reset-ticks
@@ -72,8 +73,6 @@ to setup-players
     set color red
   ]
 end
-
-
 
 to setup-flags
   create-flags 1 [
@@ -124,11 +123,38 @@ to go
   tick
 end
 
-
-
 to get-turtle-position
 
 end
+
+to set-startGame-state
+  
+;;let bluePlayerCount count players with [color = blue]
+let redPlayerCount count players with [color = red]
+
+let half redPlayerCount / 2
+let redCounter 0
+let blueCounter 0
+ 
+ask players with [color = red]
+[
+  set redCounter redCounter + 1
+ 
+  ifelse(redCounter > half)[
+      set state "attackflag"
+  ][ set state "defendflag" ]
+]
+
+ask players with [color = blue]
+[
+  set blueCounter blueCounter + 1
+  ifelse(blueCounter > half)[
+      set state "attackflag"
+  ][ set state "defendflag" ]
+]
+  
+end
+
 
 
 
@@ -136,45 +162,49 @@ to set-state
     ;;below checks if enemies are in radius of player
      ;;sets player to jail if enemy is too close
      
+     
     ask players with [color = blue][  
+     if(state != "jail")[
+  
       ifelse(any? other turtles in-radius 2)[ ;;if enemies in radius of player, player will evade else continues to run
         set state "evade"
       ][ set state "run" ]
       
-      if(any? other players with [color = red] in-radius .2)[ ;;if enemy hits player, go to jail
-        set in-prisoned players
-        set state "jail"
-      ]
-      
-      ask prisons with [color = red][
-       if(any? other players with[color = red] in-radius 1) ;;if teammate near prison, player in prison is free
-       [
-        ;;need to remove player from prison
-        set state "freed" 
-       ] 
-      ]
-      
-      ;;need to pick 2 random players to defend
+       if(any? other players with [color = red] in-radius .2)[ ;;if enemy hits player, go to jail
+           set in-prisoned players
+          set state "jail"
+       ]
+     ]
     ]
     
     ask players with [color = red][
+      if(state != "jail")[
       ifelse(any? other turtles in-radius 2)[
          set state "evade"
       ][ set state "run" ]
       
-      if(any? other players with [color = blue] in-radius .2)[
+       if(any? other players with [color = blue] in-radius .2)[
         set in-prisoned players
         set state "jail"
+       ]
       ]
-      
-      ask prisons with [color = blue][
-       if(any? other players with[color = red] in-radius 1)
+    ]
+    
+    ;;below sets state to free if teammate is closeby
+    
+     ask prisons with [color = red][
+       if(any? other players with[color = red] in-radius 1) ;;if teammate near prison, player in prison is free
        [
-        ;;need to remove player from prison
         set state "freed" 
        ] 
       ]
-    ]
+     
+     ask prisons with [color = blue][
+       if(any? other players with[color = red] in-radius 1)
+       [
+        set state "freed" 
+       ] 
+      ]
     
     flag-pickup ;;checks to see if any players picked up flag
     
@@ -185,9 +215,12 @@ end
 
 
 to check-state
-  ;;;;;;;;;;;;;;;;;;;;
-  ;;FLAG STATE TYPES;;
-  ;;;;;;;;;;;;;;;;;;;;
+
+ ask players with [color = red and color = blue][
+   
+  if(state = "attackflag")[
+    ;;move attacker to flag
+  ]
 
   if (state = "capture") [
     ;;player has flag
@@ -235,6 +268,7 @@ to check-state
     ;;teammate rescued player
     free-player
   ]
+ ]
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
@@ -306,8 +340,8 @@ SLIDER
 player-count
 player-count
 2
-100
-6
+8
+4
 2
 1
 NIL

@@ -3,8 +3,6 @@
 
 to inprison-player
   
-    ;;need to get prison location
-  
     let redprisonX 0
     let redprisonY 0
     let blueprisonX 0
@@ -62,7 +60,7 @@ to free-player
 end
 
 
-to move-evade
+to move-evade ;;sets players direction to almost same direction as enemy to escape
   
   let playerList players
   
@@ -90,8 +88,12 @@ end
 
 
 to defend-capturer
-  
+ 
+ 
   ask players with [color = blue][
+    if(state = "capture")[
+      
+    ]
     
     
     ;;check if any near by teamates

@@ -27,6 +27,7 @@ to  flag-pickup
     
     ask flags with [color = red] in-radius 2[
        setxy bluePlayerPosX bluePlayerPosY
+       set state "capture"
      ]
    ]
    
@@ -36,6 +37,7 @@ to  flag-pickup
     
     ask flags with [color = blue] in-radius 2[
        setxy redPlayerPosX redPlayerPosY ;;red team picked up flag
+       set state "capture"
     ]
    ]
 
@@ -87,5 +89,37 @@ if(blueCaptured = "true")[
 if(redCaptured = "true")[
   set red-score red-score + 1
 ]
+  
+end
+
+to capture-flag
+  
+  let redHasFlag false
+  let blueHasFlag false
+ 
+ ask players with [color = blue][
+   ask players with [color = red][
+    ifelse(state = "capture")[
+      set redHasFlag true
+    ][ set redHasFlag false ]
+   ]
+   
+   if(state = "capture" and redHasFlag = false)[
+     ;;moves player to their flag 
+   ]
+ ]
+ 
+  ask players with [color = red][
+   ask players with [color = blue][
+    ifelse(state = "capture")[
+      set blueHasFlag true
+    ][ set blueHasFlag false ]
+ 
+   ]
+   
+   if(state = "capture" and blueHasFlag = false)[
+     ;;moves player to their flag 
+   ]
+ ]
   
 end
