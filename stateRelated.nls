@@ -1,24 +1,20 @@
 
  to create-prisoncount
-   
+
    set red-prison 0
    set blue-prison 0
    set losing-score 4
- 
+
  end
 
 
-<<<<<<< HEAD
 to imprison-player
-=======
-to inprison-player
->>>>>>> origin/master
-  
+
     let redprisonX 0
     let redprisonY 0
     let blueprisonX 0
     let blueprisonY 0
-    
+
     if(color = blue)[
     ask players with [color = blue][
       ask prisons with [color = red][
@@ -26,11 +22,11 @@ to inprison-player
         set redprisonY ycor
       ]
       setxy redprisonX redprisonY
-     
+
       set red-prison red-prison + 1
     ]
     ]
-    
+
     if(color = red)[
     ask players with [color = red][
       ask prisons with [color = blue][
@@ -38,33 +34,33 @@ to inprison-player
         set blueprisonY ycor
       ]
       setxy blueprisonX blueprisonY
-     
+
       set blue-prison blue-prison + 1
     ]
     ]
-  
+
 end
 
 to free-player
-  
+
   let redPrisonX 0
   let redPrisonY 0
-  
+
   ask players with [ color = blue][
    ask prisons with [color = red][
       set redprisonX xcor
       set redprisonY ycor
     ]
-   
+
     set xcor redprisonX - 3
-    set ycor redPrisonY 
-    
+    set ycor redPrisonY
+
     set red-prison red-prison - 1
   ]
-  
+
   let bluePrisonX 0
   let bluePrisonY 0
-  
+
   ask players with[color = red][
     ask prisons with[color = blue][
       set bluePrisonX xcor
@@ -72,33 +68,30 @@ to free-player
     ]
     set xcor bluePrisonX + 3
     set ycor bluePrisonY
-    
+
     set blue-prison blue-prison - 1
   ]
-  
+
 end
 
 
-<<<<<<< HEAD
-to check-state
-=======
+
 to move-evade ;;sets players direction to almost same direction as enemy to escape
->>>>>>> origin/master
-  
+
   let playerList players
-  
+
   ask playerList[
-    
+
     set playerDirection heading
-    
+
     ;;move in opposite direction of chaser, whilst trying to get to capture point
-    
+
     let teamDirection heading
     let directionOffset 10
-    
+
       ifelse(random heading > playerDirection + directionOffset)
       [
-         let c random heading 
+         let c random heading
          set heading c
       ][ if(random heading < playerDirection - directionOffset)
       [
@@ -110,29 +103,29 @@ to move-evade ;;sets players direction to almost same direction as enemy to esca
 end
 
 to defend-capturer
- 
- 
+
+
   ask players with [color = blue][
     if(state = "capture")[
-      
+
     ]
-    
-    
+
+
     ;;check if any near by teamates
     ;;if so, move to capturers position to defend
   ]
-  
+
   ask players with [color = red][
-   
-    
+
+
   ]
 end
 
 to check-defeat
-  
+
   if red-prison = losing-score [blue-victory]
   if blue-prison = losing-score [red-victory]
-     
-    
-  
+
+
+
 end
