@@ -67,8 +67,6 @@ to setup
   ]
   [
     setup-flags
-    setup-prisons
-    set-startGame-state
     setup-players
     create-jails
     create-trees
@@ -76,6 +74,7 @@ to setup
     setup-navmesh
     setup-pathfinding
     setup-patches
+    set-startGame-state
   ]
 
 end
@@ -97,9 +96,9 @@ end
 
 to setup-flags
   create-flagRED 1 [set color red
-                 setxy random-between 2 5 random-ycor]
+                 setxy random-between 2 5 random-between 2 30]
   create-flagBLUE 1 [set color blue
-                 setxy random-between 27 30 random-ycor]
+                 setxy random-between 27 30 random-between 2 30]
 end
 
 
@@ -131,18 +130,6 @@ to create-trees
   ask tree
   [set pcolor black]
 
-end
-
-to setup-prisons
-  create-prisons 1 [
-    set shape "square"
-    set color blue
-  ]
-
-  create-prisons 1 [
-    set shape "square"
-    set color red
-  ]
 end
 
 
@@ -180,6 +167,7 @@ to set-startGame-state
 
     ifelse(redCounter > half)[
         set state "attackflag"
+        set path get-path patch-here first [ patch-here ] of flagBLUE
     ][ set state "defendflag" ]
   ]
 
@@ -188,6 +176,7 @@ to set-startGame-state
     set blueCounter blueCounter + 1
     ifelse(blueCounter > half)[
         set state "attackflag"
+        set path get-path patch-here first [ patch-here ] of flagRED
     ][ set state "defendflag" ]
   ]
 end

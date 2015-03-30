@@ -1,6 +1,6 @@
 ;; Called on agent
 to follow-path
-  if empty? path [ stop ]
+  if not is-list? path or empty? path [ stop ]
   
   let goal first path
   
