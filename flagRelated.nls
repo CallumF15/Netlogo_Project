@@ -21,25 +21,25 @@ to  flag-pickup
     set blueFlagPosY ycor
   ]
 
-;   ask players with [color = blue][
-;    set bluePlayerPosX xcor
-;    set bluePlayerPosY ycor 
-;    
-;    ask flagRED in-radius 2[
-;       setxy bluePlayerPosX bluePlayerPosY
-;       set state "capture"
-;     ]
-;   ]
-;   
-;   ask players with [color = red][
-;    set redPlayerPosX xcor
-;    set redPlayerPosY ycor 
-;    
-;    ask flagBLUE in-radius 2[
-;       setxy redPlayerPosX redPlayerPosY ;;red team picked up flag
-;       set state "capture"
-;    ]
-;   ]
+   ask players with [color = blue][
+    set bluePlayerPosX xcor
+    set bluePlayerPosY ycor 
+    
+    ask flagRED in-radius 2[
+       setxy bluePlayerPosX bluePlayerPosY
+       set state "capture"
+     ]
+   ]
+   
+   ask players with [color = red][
+    set redPlayerPosX xcor
+    set redPlayerPosY ycor 
+    
+    ask flagBLUE in-radius 2[
+       setxy redPlayerPosX redPlayerPosY ;;red team picked up flag
+       set state "capture"
+    ]
+   ]
 
 end
 

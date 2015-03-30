@@ -139,7 +139,6 @@ to go
   ;;set flags
   ;;move players
 
-  set-state
   update-navmesh-display
 
   ask players [
@@ -193,34 +192,16 @@ to set-state
 
     ask players with [color = blue][
      if(state != "jail")[
-       
-         show [xcor] of players with [color = blue]
 
-;      ifelse(any? other turtles in-radius 2)[ ;;if enemies in radius of player, player will evade else continues to run
-;        set state "evade"
-;      ][ set state "run" ]
-       
-       if( state = "defendflag")[
-         
-         if(any? other players with [color = red] in-radius 2)[ 
-           
-           ;;if enemy hits player, go to jail
-           set path get-path patch-here first [ patch-here ] of players with [color = red]
-           
-           if(any? other player with [color = red] in radius .2)
-           [
-             
-           ]
-           
+      ifelse(any? other turtles in-radius 2)[ ;;if enemies in radius of player, player will evade else continues to run
+        set state "evade"
+      ][ set state "run" ]
+
+       if(any? other players with [color = red] in-radius .2)[ ;;if enemy hits player, go to jail
            set in-prisoned players
-           set state "jail"
-           
-           ]
-         
-         ]
-         
+          set state "jail"
        ]
-
+     ]
     ]
 
     ask players with [color = red][
@@ -392,7 +373,7 @@ obstacle-count-stub
 obstacle-count-stub
 0
 1024
-209
+286
 1
 1
 NIL
@@ -526,7 +507,7 @@ player-speed
 player-speed
 0
 1
-0.465
+0.05
 0.001
 1
 NIL
@@ -903,7 +884,7 @@ Polygon -7500403 true true 270 75 225 30 30 225 75 270
 Polygon -7500403 true true 30 75 75 30 270 225 225 270
 
 @#$#@#$#@
-NetLogo 5.2-RC3
+NetLogo 5.0.5
 @#$#@#$#@
 @#$#@#$#@
 @#$#@#$#@
