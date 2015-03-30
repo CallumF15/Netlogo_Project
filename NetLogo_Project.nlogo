@@ -1,12 +1,38 @@
 breed [tree]
 breed [flagRED]
 breed [flagBLUE]
-breed [target]
-breed [person]
+breed [jail]
+breed [players]
 
-to startup
-  setup
-end
+;;;;;;;;;;;;;;;
+;; Variables ;;
+;;;;;;;;;;;;;;;
+
+globals [
+  action       ;; Last button pressed. (Include if we want user to play)
+  dead?        ;; is the A.I dead?
+  lives        ;; how many lifes left
+  time-left    ;; time remaining to end of game
+  red-score       ;; Team 1's score
+  blue-score       ;; Team 2's score
+  winning-score    ;; Score required to win
+]
+
+players-own [
+  team
+  speed
+  time
+  state ;; defines what kind of behaviour the turtle has e.g Alert, capturing flag, defending flag
+  target
+  path
+  playerDirection
+]
+
+__includes [ "navmesh.nls" "pathfinding.nls" "navigation.nls" "navigation demo.nls" "flagRelated.nls" "scoreRelated.nls"]
+
+;;;;;;;;;;;;;;;;;;;;;;;;
+;;; Setup Procedures ;;;
+;;;;;;;;;;;;;;;;;;;;;;;;
 
 to setup
   
@@ -15,15 +41,38 @@ to setup
   set-default-shape tree "tree" 
   set-default-shape flagRED "flag"
   set-default-shape flagBLUE "flag"
-  set-default-shape target "target"
-  set-default-shape person "person"
-  setup-patches
-  create-trees
-  create-base
-  create-jail
-  create-player
+  set-default-shape jail "circle 2"
+  set-default-shape players "person"
+
+;  setup-patches
+;  setup-navmesh
+;  setup-pathfinding
+   setup-patches
+  
+  if navigation-demo?
+  [
+    create-trees
+    setup-navmesh
+    setup-pathfinding
+  ]
+
+  ifelse navigation-demo? [
+    setup-navigation-demo
+  ] 
+  [
+    setup-flags
+    setup-players
+    create-jails
+    create-trees
+    ;;navmesh & pathfinder under here
+    setup-navmesh
+    setup-pathfinding
+    setup-patches
+  ]
   
 end
+
+
 
 to setup-patches
   ask patches
@@ -36,6 +85,33 @@ to-report random-between [ min-num max-num ]
     report random-float (max-num - min-num) + min-num
 end
 
+
+to setup-flags
+  create-flagRED 1 [set color red
+                 setxy random-between 2 5 random-ycor]
+  create-flagBLUE 1 [set color blue
+                 setxy random-between 27 30 random-ycor]
+end
+
+
+to setup-players
+  
+  create-players player-count [set color red
+                  setxy random-between first ([xcor - 2] of flagRED) first ([xcor + 2] of flagRED) random-between first ([ycor - 2] of flagRED) first ([ycor + 2] of flagRED)]
+  create-players player-count [set color blue
+                  setxy random-between first ([xcor - 2] of flagBLUE) first ([xcor + 2] of flagBLUE) random-between first ([ycor - 2] of flagBLUE) first ([ycor + 2] of flagBLUE)]
+  
+end
+
+to create-jails
+  create-jail 1 [set color red
+                   setxy random-between (min-pxcor) 5 random-ycor]
+  create-jail 1 [set color blue
+                   setxy random-between 27 (max-pxcor) random-ycor]
+  ask jail
+  [set pcolor 32]
+end
+
 to create-trees
   create-tree 20 [set color 53 
                   setxy  random-between (min-pxcor) 14 random-ycor]
@@ -43,46 +119,103 @@ to create-trees
                   setxy  random-between 18 (max-pxcor)  random-ycor]
   ask tree [if any? other turtles-here [die]]
   
-end
-
-to create-base
-  create-flagRED 1 [set color red
-                 setxy random-between 2 5 random-ycor]
-  create-flagBLUE 1 [set color blue
-                 setxy random-between 27 30 random-ycor]
+  ask tree
+  [set pcolor black]
   
 end
 
-to create-jail
-  create-target 1 [set color red
-                   setxy random-between (min-pxcor) 5 random-ycor]
-  create-target 1 [set color blue
-                   setxy random-between 27 (max-pxcor) random-ycor]
+to go
+  ;;set spawns
+  ;;set flags
+  ;;move players
+
+  update-navmesh-display
+  
+  ask players [
+    follow-path
+  ]
+
+  tick
 end
 
-to create-player
-  ;patch-left-and-ahead 30 1
-  create-person 3[set color red
-                  setxy random-between first ([xcor - 2] of flagRED) first ([xcor + 2] of flagRED) random-between first ([ycor - 2] of flagRED) first ([ycor + 2] of flagRED)]
-  create-person 3[set color blue
-                  setxy random-between first ([xcor - 2] of flagBLUE) first ([xcor + 2] of flagBLUE) random-between first ([ycor - 2] of flagBLUE) first ([ycor + 2] of flagBLUE)]
+
+to get-turtle-position
+
 end
 
-to Testing
-  show [xcor] of turtle 40
 
+to set-state
+;  ask teams [
+    ifelse (any? other turtles in-radius 2) [  ;;if other turtles (which will be the enemy team) are near player, the player's state is set to evde
+      set state "evade"
+    ] [
+      set state "run"   ]
+
+  ;; default state is standing/walking/running?
+  ;; other states: Capturing flag, Defending flag, Defending Capturer, Jailed, evade, run
+end
+
+
+
+to move
+  ;;;;;;;;;;;;;;;;;;;;
+  ;;FLAG STATE TYPES;;
+  ;;;;;;;;;;;;;;;;;;;;
+
+  if (state = "capture") [
+    ;;player has flag
+    ;;move towards direction of own teams flag
+  ]
+
+  if (state = "defendflag") [
+    ;;determine which turtle teammates will remain back to defend flag
+  ]
+
+  if (state = "defendcapturer") [
+    ;;other turtle teammates nearby will defend flag holder
+  ]
+
+  if (state = "lostflag") [
+    ;;team on alert trying to locate flag taker (soon as it's took, some move back to flag default location to find taker)
+  ]
+
+  ;;;;;;;;;;;;;;;;;;;;;;;;
+  ;;MOVEMENT STATE TYPES;;
+  ;;;;;;;;;;;;;;;;;;;;;;;;
+
+  if (state = "evade") [
+    ;;move in direction the chaser is facing and move?
+    fd speed;
+  ]
+
+  if (state = "run") [
+    set speed speed = 2
+  ]
+
+  if (state = "walk") [
+    set speed speed = 1
+  ]
+
+  if (state = "rescue") [
+    ;;save teamate from jail (be aimed at defenders or whoever is near the cell)
+  ]
+
+  if (state = "jail") [
+    ;;cannot do anything, await rescue
+    set speed speed = 0
+  ]
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
-823
-24
-1317
-539
+276
+12
+715
+472
 -1
 -1
-14.67
+13.0
 1
-10
+9
 1
 1
 1
@@ -101,12 +234,116 @@ ticks
 30.0
 
 BUTTON
-36
-37
-130
-70
-New Game 
-startup
+11
+10
+74
+43
+setup
+setup
+NIL
+1
+T
+OBSERVER
+NIL
+S
+NIL
+NIL
+1
+
+BUTTON
+78
+10
+141
+43
+go
+go
+T
+1
+T
+OBSERVER
+NIL
+G
+NIL
+NIL
+1
+
+SLIDER
+10
+54
+182
+87
+player-count
+player-count
+2
+100
+4
+2
+1
+NIL
+HORIZONTAL
+
+SLIDER
+79
+151
+251
+184
+obstacle-count-stub
+obstacle-count-stub
+0
+1024
+210
+1
+1
+NIL
+HORIZONTAL
+
+SWITCH
+91
+365
+245
+398
+navigation-demo?
+navigation-demo?
+1
+1
+-1000
+
+OUTPUT
+727
+10
+1328
+465
+12
+
+SWITCH
+83
+197
+225
+230
+color-navmesh?
+color-navmesh?
+1
+1
+-1000
+
+SWITCH
+85
+246
+226
+279
+label-navmesh?
+label-navmesh?
+1
+1
+-1000
+
+BUTTON
+787
+490
+910
+523
+NIL
+output-navmesh
 NIL
 1
 T
@@ -118,12 +355,100 @@ NIL
 1
 
 BUTTON
-39
-99
-102
-132
-Test
-testing
+925
+490
+1087
+523
+NIL
+output-navmesh-matrix
+NIL
+1
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
+1
+
+BUTTON
+1098
+491
+1198
+524
+NIL
+clear-output
+NIL
+1
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
+1
+
+BUTTON
+158
+452
+250
+485
+NIL
+select-goal
+T
+1
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
+1
+
+SWITCH
+19
+408
+163
+441
+smooth-path?
+smooth-path?
+0
+1
+-1000
+
+SLIDER
+10
+94
+182
+127
+player-speed
+player-speed
+0
+1
+0.713
+0.001
+1
+NIL
+HORIZONTAL
+
+SWITCH
+24
+451
+143
+484
+draw-path?
+draw-path?
+0
+1
+-1000
+
+BUTTON
+20
+494
+118
+527
+NIL
+output-path
 NIL
 1
 T

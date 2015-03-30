@@ -1,0 +1,154 @@
+breed [ points point ]
+
+to setup-navigation-demo
+  create-players 1 [
+    set color blue
+    set shape "person"
+    set target one-of patches
+    set path get-path patch-here target
+  ]
+  
+  draw-path
+end
+
+
+
+to draw-path
+  ask points [ die ]
+  clear-links
+  
+  if not draw-path? [ stop ]
+        
+  let point-list []
+  ask players [
+    set point-list path
+  ]
+  
+  let previous-point false
+  foreach point-list [
+    create-points 1 [
+      setxy first ? last ?
+      set shape "dot"
+      set color black
+      
+      if previous-point != false [
+        create-link-with previous-point [
+          set color red
+        ]
+      ]
+      
+      set previous-point self
+    ]
+  ]
+end
+
+
+
+to select-goal
+  if navigation-demo? [
+    if mouse-inside? [
+      ask patch mouse-xcor mouse-ycor [
+        sprout 1 [
+          set shape "square"
+          die
+        ]
+      ]
+      
+      if mouse-down? [
+        ask players [
+          set target patch mouse-xcor mouse-ycor
+          set path get-path patch-here target
+        ]
+        
+        draw-path
+        stop
+      ]
+    ]
+  ]
+end
+
+
+
+to update-navmesh-display
+  ;toggle-color-navmesh
+  toggle-label-navmesh
+end
+
+
+
+;to toggle-color-navmesh
+;  let node-colors ifelse-value color-navmesh? [
+;    filter [ ? != black ] base-colors
+;  ] [
+;    [ green ]
+;  ]
+;  let index 0
+;
+;  foreach navmesh [
+;    foreach ? [
+;      ask ? [
+;        set pcolor item index node-colors
+;      ]
+;    ]
+;
+;    set index ifelse-value (index + 1 = length node-colors) [ 0 ] [ index + 1 ]
+;  ]
+;end
+
+
+
+to toggle-label-navmesh
+  ifelse label-navmesh? [
+    let node-label 0
+    
+    foreach navmesh [
+      foreach ? [
+        ask ? [
+          set plabel node-label
+        ]
+      ]
+      
+      set node-label node-label + 1
+    ]
+  ] [
+    foreach navmesh [
+      foreach ? [
+        ask ? [
+          set plabel ""
+        ]
+      ]
+    ]
+  ]
+end
+
+
+
+to output-navmesh
+  let index 0
+  foreach navmesh [
+    output-show (word index ": " ?)
+    set index index + 1
+  ]
+end
+
+
+
+to output-navmesh-matrix
+  let index 0
+  foreach navmesh-matrix [
+    output-show (word index ": " ?)
+    set index index + 1
+  ]
+end
+
+
+
+to output-path
+  ask players [
+    ifelse not empty? path [
+      output-show (word "goal: " containing-node target " path: " path)
+    ] [
+    output-show (word "goal: " containing-node target " No path found")
+    ]
+  ]
+end
