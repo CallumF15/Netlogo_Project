@@ -8,10 +8,10 @@ globals [
 
 to setup-navmesh
   ;; stub to populate world with obstacles
-  let obstacles n-of obstacle-count-stub patches
-  ask obstacles [
-    set pcolor black
-  ]
+  ;let obstacles n-of obstacle-count-stub patches
+  ;ask obstacles [
+  ;  set pcolor black
+  ;]
 
   set navmesh []
   set navmesh-matrix []

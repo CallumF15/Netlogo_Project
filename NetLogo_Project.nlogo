@@ -1,6 +1,10 @@
 breed [ players player ]
 breed [ flags flag ]
 breed [ prisons prison ]
+breed [ tree ]
+breed [ flagRED ]
+breed [ flagBLUE ]
+breed [ jail ]
 
 ;;;;;;;;;;;;;;;
 ;; Variables ;;
@@ -37,68 +41,104 @@ __includes [ "navmesh.nls" "pathfinding.nls" "navigation.nls" "navigation demo.n
 ;;;;;;;;;;;;;;;;;;;;;;;;
 
 to setup
-  clear-all
 
-  setup-patches
-  setup-navmesh
-  setup-pathfinding
+  clear-all
+  reset-ticks
+  set-default-shape tree "tree"
+  set-default-shape flagRED "flag"
+  set-default-shape flagBLUE "flag"
+  set-default-shape jail "circle 2"
+  set-default-shape players "person"
+
+;  setup-patches
+;  setup-navmesh
+;  setup-pathfinding
+   setup-patches
+
+  if navigation-demo?
+  [
+    create-trees
+    setup-navmesh
+    setup-pathfinding
+  ]
 
   ifelse navigation-demo? [
     setup-navigation-demo
-  ] [
-    setup-players
+  ]
+  [
     setup-flags
     setup-prisons
     set-startGame-state
+    setup-players
+    create-jails
+    create-trees
+    ;;navmesh & pathfinder under here
+    setup-navmesh
+    setup-pathfinding
+    setup-patches
   ]
 
-  reset-ticks
 end
 
 
 
 to setup-patches
-  ask patches [ set pcolor green ]
+  ask patches
+    [ set pcolor green ]
+  ask patches with [pxcor <= 17 and pxcor >= 15]
+    [ set pcolor blue ]
+end
+
+to-report random-between [ min-num max-num ]
+    report random-float (max-num - min-num) + min-num
+end
+
+
+
+to setup-flags
+  create-flagRED 1 [set color red
+                 setxy random-between 2 5 random-ycor]
+  create-flagBLUE 1 [set color blue
+                 setxy random-between 27 30 random-ycor]
 end
 
 
 
 to setup-players
-  create-players player-count [
-    setxy random-xcor random-ycor
-    set shape "person"
-    set color blue
-  ]
 
-  create-players player-count [
-    setxy random-xcor random-ycor
-    set shape "person"
-    set color red
-  ]
+  create-players player-count [set color red
+                  setxy random-between first ([xcor - 2] of flagRED) first ([xcor + 2] of flagRED) random-between first ([ycor - 2] of flagRED) first ([ycor + 2] of flagRED)]
+  create-players player-count [set color blue
+                  setxy random-between first ([xcor - 2] of flagBLUE) first ([xcor + 2] of flagBLUE) random-between first ([ycor - 2] of flagBLUE) first ([ycor + 2] of flagBLUE)]
 end
 
-to setup-flags
-  create-flags 1 [
-    setxy 14 10
-    set shape "flag"
-    set color blue
-  ]
-
-  create-flags 1 [
-    setxy 2 10
-    set shape "flag"
-    set color red
-  ]
+to create-jails
+  create-jail 1 [set color red
+                   setxy random-between (min-pxcor) 5 random-ycor]
+  create-jail 1 [set color blue
+                   setxy random-between 27 (max-pxcor) random-ycor]
+  ask jail
+  [set pcolor 32]
 end
 
+to create-trees
+  create-tree 20 [set color 53
+                  setxy  random-between (min-pxcor) 14 random-ycor]
+  create-tree 20 [set color 53
+                  setxy  random-between 18 (max-pxcor)  random-ycor]
+  ask tree [if any? other turtles-here [die]]
 
+  ask tree
+  [set pcolor black]
+
+end
 
 to setup-prisons
   create-prisons 1 [
     set shape "square"
     set color blue
   ]
-  
+
   create-prisons 1 [
     set shape "square"
     set color red
@@ -127,32 +167,30 @@ end
 
 to set-startGame-state
 
-;;let bluePlayerCount count players with [color = blue]
-let redPlayerCount count players with [color = red]
+  ;;let bluePlayerCount count players with [color = blue]
+  let redPlayerCount count players with [color = red]
 
-let half redPlayerCount / 2
-let redCounter 0
-let blueCounter 0
+  let half redPlayerCount / 2
+  let redCounter 0
+  let blueCounter 0
 
-ask players with [color = red]
-[
-  set redCounter redCounter + 1
+  ask players with [color = red]
+  [
+    set redCounter redCounter + 1
 
-  ifelse(redCounter > half)[
-      set state "attackflag"
-  ][ set state "defendflag" ]
-]
+    ifelse(redCounter > half)[
+        set state "attackflag"
+    ][ set state "defendflag" ]
+  ]
 
-ask players with [color = blue]
-[
-  set blueCounter blueCounter + 1
-  ifelse(blueCounter > half)[
-      set state "attackflag"
-  ][ set state "defendflag" ]
-]
-
+  ask players with [color = blue]
+  [
+    set blueCounter blueCounter + 1
+    ifelse(blueCounter > half)[
+        set state "attackflag"
+    ][ set state "defendflag" ]
+  ]
 end
-
 
 
 
@@ -478,8 +516,8 @@ player-speed
 player-speed
 0
 1
-0.1
-0.01
+0.05
+0.001
 1
 NIL
 HORIZONTAL

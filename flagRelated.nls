@@ -11,12 +11,12 @@ to  flag-pickup
   let redPlayerPosX 0
   let redPlayerPosY 0
   
-  ask flags with [color = red][
+  ask flagRED[
     set redFlagPosX xcor 
     set redFlagPosY ycor
   ]
   
-  ask flags with [color = blue][
+  ask flagBLUE[
     set blueFlagPosX xcor 
     set blueFlagPosY ycor
   ]
@@ -25,7 +25,7 @@ to  flag-pickup
     set bluePlayerPosX xcor
     set bluePlayerPosY ycor 
     
-    ask flags with [color = red] in-radius 2[
+    ask flagRED in-radius 2[
        setxy bluePlayerPosX bluePlayerPosY
        set state "capture"
      ]
@@ -35,7 +35,7 @@ to  flag-pickup
     set redPlayerPosX xcor
     set redPlayerPosY ycor 
     
-    ask flags with [color = blue] in-radius 2[
+    ask flagBLUE in-radius 2[
        setxy redPlayerPosX redPlayerPosY ;;red team picked up flag
        set state "capture"
     ]
@@ -52,7 +52,7 @@ to flag-capture
      if(redHasFlag = "false")[
     
     
-       ask flags with [color = blue] in-radius 2[
+       ask flagBLUE in-radius 2[
          ;;flag captured
          respawn-flags
        ]
@@ -62,7 +62,7 @@ to flag-capture
   if(redHasFlag = "true")[
     if(blueHasFlag = "false")[
       
-       ask flags with [color = red] in-radius 2[
+       ask flagRED in-radius 2[
          ;;flag captured
          respawn-flags
        ]
@@ -80,7 +80,7 @@ let redCaptured "false"
 if(blueCaptured = "true")[
   set blue-score blue-score + 1
   
-  ask flags with [color = red][
+  ask flagRED [
    die
   ]
    ;;create flag

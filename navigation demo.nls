@@ -70,30 +70,30 @@ end
 
 
 to update-navmesh-display
-  toggle-color-navmesh
+  ;toggle-color-navmesh
   toggle-label-navmesh
 end
 
 
 
-to toggle-color-navmesh
-  let node-colors ifelse-value color-navmesh? [
-    filter [ ? != black ] base-colors
-  ] [
-    [ green ]
-  ]
-  let index 0
-
-  foreach navmesh [
-    foreach ? [
-      ask ? [
-        set pcolor item index node-colors
-      ]
-    ]
-
-    set index ifelse-value (index + 1 = length node-colors) [ 0 ] [ index + 1 ]
-  ]
-end
+;to toggle-color-navmesh
+;  let node-colors ifelse-value color-navmesh? [
+;    filter [ ? != black ] base-colors
+;  ] [
+;    [ green ]
+;  ]
+;  let index 0
+;
+;  foreach navmesh [
+;    foreach ? [
+;      ask ? [
+;        set pcolor item index node-colors
+;      ]
+;    ]
+;
+;    set index ifelse-value (index + 1 = length node-colors) [ 0 ] [ index + 1 ]
+;  ]
+;end
 
 
 
