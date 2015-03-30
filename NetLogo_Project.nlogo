@@ -27,6 +27,7 @@ players-own [
   target
   path
   playerDirection
+  in-prisoned
 ]
 
 __includes [ "navmesh.nls" "pathfinding.nls" "navigation.nls" "navigation demo.nls" "flagRelated.nls" "scoreRelated.nls" "stateRelated.nls" ]
@@ -86,6 +87,20 @@ to setup-flags
   create-flags 1 [
     setxy 2 10
     set shape "flag"
+    set color red
+  ]
+end
+
+
+
+to setup-prisons
+  create-prisons 1 [
+    set shape "square"
+    set color blue
+  ]
+  
+  create-prisons 1 [
+    set shape "square"
     set color red
   ]
 end
@@ -242,7 +257,6 @@ to move
     ;;cannot do anything, await rescue
     set speed speed = 0
   ]
- ]
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
@@ -343,7 +357,7 @@ SWITCH
 398
 navigation-demo?
 navigation-demo?
-0
+1
 1
 -1000
 
@@ -463,9 +477,9 @@ SLIDER
 player-speed
 player-speed
 0
-2
-1.5
-0.5
+1
+0.1
+0.01
 1
 NIL
 HORIZONTAL
@@ -841,7 +855,7 @@ Polygon -7500403 true true 270 75 225 30 30 225 75 270
 Polygon -7500403 true true 30 75 75 30 270 225 225 270
 
 @#$#@#$#@
-NetLogo 5.2-RC2
+NetLogo 5.0.5
 @#$#@#$#@
 @#$#@#$#@
 @#$#@#$#@
