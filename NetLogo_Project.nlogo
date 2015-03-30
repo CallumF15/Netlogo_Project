@@ -121,9 +121,9 @@ to create-jails
 end
 
 to create-trees
-  create-tree 20 [set color 53
+  create-tree 200 [set color 53
                   setxy  random-between (min-pxcor) 14 random-ycor]
-  create-tree 20 [set color 53
+  create-tree 200 [set color 53
                   setxy  random-between 18 (max-pxcor)  random-ycor]
   ask tree [if any? other turtles-here [die]]
 
