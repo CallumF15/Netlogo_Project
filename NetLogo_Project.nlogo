@@ -144,6 +144,8 @@ to go
   ask players [
     follow-path
   ]
+  
+  draw-path
 
   tick
 end

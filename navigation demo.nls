@@ -18,26 +18,31 @@ to draw-path
   clear-links
   
   if not draw-path? [ stop ]
-        
-  let point-list []
+
+  let point-lists []
   ask players [
-    set point-list path
+    if is-list? path [
+      set point-lists lput path point-lists
+    ]
   ]
   
-  let previous-point false
-  foreach point-list [
-    create-points 1 [
-      setxy first ? last ?
-      set shape "dot"
-      set color black
-      
-      if previous-point != false [
-        create-link-with previous-point [
-          set color red
+  foreach point-lists [
+    let previous-point false
+    
+    foreach ? [
+      create-points 1 [
+        setxy first ? last ?
+        set shape "dot"
+        set color black
+        
+        if previous-point != false [
+          create-link-with previous-point [
+            set color red
+          ]
         ]
+        
+        set previous-point self
       ]
-      
-      set previous-point self
     ]
   ]
 end
@@ -145,10 +150,10 @@ end
 
 to output-path
   ask players [
-    ifelse not empty? path [
+    ifelse not is-list? path or not empty? path [
       output-show (word "goal: " containing-node target " path: " path)
     ] [
-    output-show (word "goal: " containing-node target " No path found")
+      output-show (word "goal: " containing-node target " No path found")
     ]
   ]
 end
