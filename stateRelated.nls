@@ -16,7 +16,7 @@ to imprison-player
     let blueprisonY 0
 
     if(color = blue)[
-    ask players with [color = blue][
+    ask players with [color = blue and hasFlag = false][
       ask prisons with [color = red][
         set redprisonX xcor
         set redprisonY ycor
@@ -28,7 +28,7 @@ to imprison-player
     ]
 
     if(color = red)[
-    ask players with [color = red][
+    ask players with [color = red and hasFlag = false][
       ask prisons with [color = blue][
         set blueprisonX xcor
         set blueprisonY ycor
@@ -76,31 +76,21 @@ end
 
 
 
-to move-evade ;;sets players direction to almost same direction as enemy to escape
-
-
-  ask players[
-
-    set playerDirection heading
-
-    ;;move in opposite direction of chaser, whilst trying to get to capture point
-
-    let teamDirection heading
-    let directionOffset 10
-
-      ifelse(random heading > playerDirection + directionOffset)
-      [
-         let c random heading
-         set heading c
-         
-      ][ if(random heading < playerDirection - directionOffset)
-      [
-        let d random heading
-        set heading d
-      ]
-      ]
-      
-      fd 2
+to move-evade ;;sets player position to somewhere to escape enemy
+  
+  let blueX 0
+  let blueY 0
+  
+  ask players with [color = red and state = "evade"][
+    ;;randomly choose a path in opposite direction of enemy
+    
+    ask players with [color = blue] in-radius .2[ ;;get enemy in-radius of player ;;get position
+      set blueX xcor
+      set blueY ycor
+    ]
+    
+    ;;set random coordinates here
+    ;;apply to pathfinding
   ]
   
 end

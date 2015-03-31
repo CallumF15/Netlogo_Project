@@ -8,6 +8,7 @@ globals[
   redFlagSpawnPositionY
   blueFlagSpawnPositionX
   blueFlagSpawnPositionY
+  hasFlagRespawned
 ]
 
 to flag-pickup[player] ;;parsely working
@@ -31,6 +32,7 @@ if(teamColor = blue)[
   ]
 ]
 
+if(hasFlagRespawned = false)[
  ask player[
    if(defaultBool = false)[
 
@@ -58,6 +60,7 @@ if(teamColor = blue)[
         ]
     ]
  ]
+]
    
 end
 
@@ -65,27 +68,47 @@ to respawn-blue-flags
   
   set blue-score blue-score + 1
   ask flagBLUE [ die ]
-  create-flags 1 [ set color blue setxy blueFlagSpawnPositionX blueFlagSpawnPositionY ]
+  create-flags 1 [ set color blue setxy blueFlagSpawnPositionX blueFlagSpawnPositionY set shape "flag"]
+  set hasFlagRespawned true
 end
 
 to respawn-red-flags
   set red-score red-score + 1
   ask flagRED [die]
-  create-flags 1 [ set color red setxy redFlagSpawnPositionX redFlagSpawnPositionY ]
+  create-flags 1 [ set color red setxy redFlagSpawnPositionX redFlagSpawnPositionY set shape "flag"]
+  set hasFlagRespawned true
 end
 
 to flag-captured
   
-    ;;need to take global variables blueFlagSpawnPositionX (flag default position)
-    ;;and check if flag is there, and if enemyflag is in-radius of it then capture
-    
-    ask flagRED[
-     ask flagBLUE in-radius 1[
-     ;;blue flag captured 
-     ;;respawn-blue-flags
+    let redDefaultSpawn true
+    let blueDefaultSpawn true
+    let redIn-radius false
+    let blueIn-radius false
+        
+     ask flagRED[
+      if(xcor = redFlagSpawnPositionX and ycor = redFlagSpawnPositionY)[
+        set redDefaultSpawn true
+      ]
+      
+      ask flagBLUE in-radius 1[
+        set blueIn-radius true
+      ]
      ]
-    ]
-  
+      
+     ask flagBLUE[
+       if(xcor = blueFlagSpawnPositionX and ycor = blueFlagSpawnPositionY)[
+        set blueDefaultSpawn true
+       ]
+       
+        ask flagRED in-radius 1[
+          set redIn-radius true
+      ]
+     ]
+     
+     if(blueDefaultSpawn = true and redIn-radius) [ respawn-blue-flags ]
+     if(redDefaultSpawn = true and blueIn-radius) [ respawn-red-flags ]
+     
 end
 
 
