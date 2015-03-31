@@ -7,16 +7,10 @@ globals [
 ]
 
 to setup-navmesh
-  ;; stub to populate world with obstacles
-  ;let obstacles n-of obstacle-count-stub patches
-  ;ask obstacles [
-  ;  set pcolor black
-  ;]
-
   set navmesh []
   set navmesh-matrix []
 
-  ;; generate navmes and adjacency matrix
+  ;; generate navmesh and adjacency matrix
   let x 0
   repeat max-pxcor + 1 [
     let vertical-slab (list sort patches with [ pxcor = x ])
