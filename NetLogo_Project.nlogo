@@ -30,10 +30,16 @@ players-own [
   state ;; defines what kind of behaviour the turtle has e.g Alert, capturing flag, defending flag
   target
   path
+  path-points
+  path-links
   playerDirection
   in-prisoned
   previousState
   stateChanged
+]
+
+patches-own [
+  default-color
 ]
 
 __includes [ "navmesh.nls" "pathfinding.nls" "navigation.nls" "navigation demo.nls" "flagRelated.nls" "scoreRelated.nls" "stateRelated.nls" ]
@@ -57,17 +63,12 @@ to setup
 ;  setup-pathfinding
    setup-patches
 
-  if navigation-demo?
-  [
+  ifelse navigation-demo? [
     create-trees
     setup-navmesh
     setup-pathfinding
-  ]
-
-  ifelse navigation-demo? [
     setup-navigation-demo
-  ]
-  [
+  ] [
     set redBool false
     set blueBool false
     setup-flags
@@ -76,8 +77,8 @@ to setup
     create-trees
     ;;navmesh & pathfinder under here
     setup-navmesh
-    ;;setup-pathfinding
-    setup-patches
+    setup-pathfinding
+;    setup-patches
     set-startGame-state
   ]
 
@@ -85,10 +86,14 @@ end
 
 
 to setup-patches
-  ask patches
-    [ set pcolor green ]
-  ask patches with [pxcor <= 17 and pxcor >= 15]
-    [ set pcolor blue ]
+  ask patches [
+    set pcolor green
+    set default-color green
+  ]
+  ask patches with [pxcor <= 17 and pxcor >= 15] [
+    set pcolor 107
+    set default-color 107
+  ]
 end
 
 to-report random-between [ min-num max-num ]
@@ -139,18 +144,16 @@ end
 
 to go
 
-  ask players[
-  setup-pathfinding
-  follow-path
-]
-
   update-navmesh-display
-  check-state-Changed
-  check-state
-  
-  set-state
-  draw-path
-  
+
+  ask players [
+    follow-path
+    check-state-Changed
+    check-state
+
+    set-state
+  ]
+
   tick
 end
 
@@ -170,7 +173,9 @@ to set-startGame-state
     set redCounter redCounter + 1
 
     ifelse(redCounter > half)[
-        set state "attackflag" 
+        set state "attackflag"
+        set path get-path patch-here first [ patch-here ] of flagBLUE
+        draw-path
     ][ set state "defendflag" ]
   ]
 
@@ -178,25 +183,27 @@ to set-startGame-state
   [
     set blueCounter blueCounter + 1
     ifelse(blueCounter > half)[
-        set state "attackflag"     
+        set state "attackflag"
+        set path get-path patch-here first [ patch-here ] of flagRED
+        draw-path
     ][ set state "defendflag" ]
   ]
-  
+
 end
 
 to check-state-changed ;;checks to see if the current player state has changed, if so, update
-  
+
   ask players[
     if(state = previousState)[
-      set stateChanged false 
+      set stateChanged false
     ]
-    
+
     if(previousState != state)[
-      set stateChanged true 
+      set stateChanged true
     ]
     set previousState state
   ]
-  
+
 end
 
 to set-state
@@ -255,20 +262,20 @@ end
 
 
 to check-state
-  
+
  ask players[
     output-show (state)
     ;;output-show (stateChanged)
-     
+
  if(stateChanged = true)[
-     
+
   ;;default states
-  
+
   if(state = "attackflag")[
     if(color = red)[
       set path get-path patch-here first [ patch-here ] of flagBLUE
     ]
-    
+
     if(color = blue)[
        set path get-path patch-here first [ patch-here ] of flagRED
     ]
@@ -278,14 +285,14 @@ to check-state
     if(color = red)[
       ;;patrol radius around flag
     ]
-    
+
     if(color = blue)[
-      
+
     ]
   ]
-  
+
   ;;end default states
-   
+
   if (state = "capture") [
     if(color = red)[
       capture-flag
@@ -295,7 +302,7 @@ to check-state
     ]
     set speed speed = 2
   ]
-  
+
   if (state = "defendcapturer") [
     ;;other turtle teammates nearby will defend flag holder
     defend-capturer
@@ -314,10 +321,10 @@ to check-state
   if (state = "rescue") [
     ;;save teamate from jail (be aimed at defenders or whoever is near the cell)
   ]
-  
+
   if(state = "freed")[
     ;;spawn player out of prison
-    
+
   ]
 
   if (state = "jail") [
@@ -405,26 +412,11 @@ player-count
 NIL
 HORIZONTAL
 
-SLIDER
-79
-151
-251
-184
-obstacle-count-stub
-obstacle-count-stub
-0
-1024
-254
-1
-1
-NIL
-HORIZONTAL
-
 SWITCH
-91
-365
-245
-398
+30
+511
+184
+544
 navigation-demo?
 navigation-demo?
 0
@@ -439,10 +431,10 @@ OUTPUT
 12
 
 SWITCH
-83
-197
-225
-230
+23
+212
+165
+245
 color-navmesh?
 color-navmesh?
 1
@@ -450,10 +442,10 @@ color-navmesh?
 -1000
 
 SWITCH
-85
-246
-226
-279
+25
+261
+166
+294
 label-navmesh?
 label-navmesh?
 1
@@ -512,10 +504,10 @@ NIL
 1
 
 BUTTON
-158
-452
-250
-485
+199
+512
+291
+545
 NIL
 select-goal
 T
@@ -529,10 +521,10 @@ NIL
 1
 
 SWITCH
-19
-408
-163
-441
+25
+315
+169
+348
 smooth-path?
 smooth-path?
 0
@@ -555,10 +547,10 @@ NIL
 HORIZONTAL
 
 SWITCH
-24
-451
-143
-484
+30
+358
+149
+391
 draw-path?
 draw-path?
 0
@@ -566,10 +558,10 @@ draw-path?
 -1000
 
 BUTTON
-20
-494
-118
-527
+674
+490
+772
+523
 NIL
 output-path
 NIL
@@ -932,7 +924,7 @@ Polygon -7500403 true true 270 75 225 30 30 225 75 270
 Polygon -7500403 true true 30 75 75 30 270 225 225 270
 
 @#$#@#$#@
-NetLogo 5.2-RC2
+NetLogo 5.0.5
 @#$#@#$#@
 @#$#@#$#@
 @#$#@#$#@
