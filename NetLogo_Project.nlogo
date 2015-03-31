@@ -419,7 +419,7 @@ SWITCH
 544
 navigation-demo?
 navigation-demo?
-0
+1
 1
 -1000
 
@@ -615,7 +615,7 @@ NIL
 	 Chinglong Law
 	 Callum Flannagan
  Link we use?
-	Dont remember.
+	file:///C:/Program%20Files%20(x86)/NetLogo%205.2-RC2/docs/infotab.html.
 )
 @#$#@#$#@
 default
@@ -924,7 +924,7 @@ Polygon -7500403 true true 270 75 225 30 30 225 75 270
 Polygon -7500403 true true 30 75 75 30 270 225 225 270
 
 @#$#@#$#@
-NetLogo 5.0.5
+NetLogo 5.2-RC2
 @#$#@#$#@
 @#$#@#$#@
 @#$#@#$#@
