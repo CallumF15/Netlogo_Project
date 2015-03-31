@@ -79,7 +79,6 @@ to setup
     create-jails
     create-trees
     set-player-id
-    set hasFlagRespawned false
     ;;navmesh & pathfinder under here
     setup-navmesh
     setup-pathfinding
@@ -293,17 +292,16 @@ to set-state[player]
 
     flag-pickup player ;;checks to see if any players picked up flag
     
-    ;;below checks if any players have flag 
+    ;;below checks if any players have flag
     
-    ask player with [hasFlag = true][ ;;somethings up with this
+    ask player with [hasFlag = true][
       if(any? players with [color = opponentColor and hasFlag = false])[
         set state "defendcapturer"
       ]
     ]
     
-    
     let flag 0
-   ask player with [color = teamColor and hasFlag = false and previousState != "attackflag"] [ ;;checks if players in-radius of flag
+   ask player with [color = teamColor] [
      let blah false
      if(teamColor = blue)[ set flag flagBLUE ]
      if(teamColor = red) [ set flag flagRED  ]
@@ -608,7 +606,7 @@ player-speed
 player-speed
 0
 1
-0.242
+0.127
 0.001
 1
 NIL
