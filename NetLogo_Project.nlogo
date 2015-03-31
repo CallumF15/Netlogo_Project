@@ -583,6 +583,8 @@ Capture the Flag game in which both teams have to capture the flag and return it
 
 Both turtles are assigned to teams and have different states depending on which actions they can take.
 
+The forest layout is generated at the start of a game along with a navigation mesh for pathfinding.
+
 ## HOW TO USE IT
 
 Pressing setup creates the game, go plays the game, player count sets up the number of players in the game.
