@@ -323,7 +323,7 @@ to check-state
   if (state = "jail") [
     ;;cannot do anything, await rescue
     set speed speed = 0
-    inprison-player
+    imprison-player
   ]
  ]
  ]
@@ -427,7 +427,7 @@ SWITCH
 398
 navigation-demo?
 navigation-demo?
-1
+0
 1
 -1000
 
@@ -585,39 +585,46 @@ NIL
 @#$#@#$#@
 ## WHAT IS IT?
 
-(a general understanding of what the model is trying to show or explain)
+(Capture the Flag game in which both teams have to capture the flag and return it too their own base.)
 
 ## HOW IT WORKS
 
-(what rules the agents use to create the overall behavior of the model)
+(Both turtles are assigned to teams and have different states depending on which actions they can take.)
 
 ## HOW TO USE IT
 
-(how to use the model, including a description of each of the items in the Interface tab)
+(Pressing setup creates the game, go plays the game, player count sets up the number of players in the game.)
 
 ## THINGS TO NOTICE
 
-(suggested things for the user to notice while running the model)
+(Notice the path that the player takes, the state that the players are in, the level being generated.)
 
 ## THINGS TO TRY
 
-(suggested things for the user to try to do (move sliders, switches, etc.) with the model)
+(Change the number of players, change the sped of the players, change the number of trees, set up an navigation demo and then selecting a goal for the player to travel to.)
 
 ## EXTENDING THE MODEL
 
-(suggested things to add or change in the Code tab to make the model more complicated, detailed, accurate, etc.)
+(Suggested things to add or change in the Code tab to make the model more complicated, detailed, accurate, etc.)
 
 ## NETLOGO FEATURES
 
-(interesting or unusual features of NetLogo that the model uses, particularly in the Code tab; or where workarounds were needed for missing features)
+(Pathfinding for players, the changing of many states and random between two numbers.)
 
 ## RELATED MODELS
 
-(models in the NetLogo Models Library and elsewhere which are of related interest)
+(There are no models in the model library. We are the first to come up with this idea.)
 
 ## CREDITS AND REFERENCES
-
-(a reference to the model's URL on the web if it has one, as well as any other necessary credits, citations, and links)
+ 
+(Members-
+	 Mathew Mitchell
+	 Mathew McGerty
+	 Chinglong Law
+	 Callum Flannagan
+ Link we use?
+	Dont remember.
+)
 @#$#@#$#@
 default
 true
@@ -925,7 +932,7 @@ Polygon -7500403 true true 270 75 225 30 30 225 75 270
 Polygon -7500403 true true 30 75 75 30 270 225 225 270
 
 @#$#@#$#@
-NetLogo 5.2-RC3
+NetLogo 5.2-RC2
 @#$#@#$#@
 @#$#@#$#@
 @#$#@#$#@

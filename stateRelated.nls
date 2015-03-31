@@ -8,7 +8,7 @@
  end
 
 
-to inprison-player
+to imprison-player
 
     let redprisonX 0
     let redprisonY 0
