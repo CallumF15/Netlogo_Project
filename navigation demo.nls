@@ -8,36 +8,38 @@ to setup-navigation-demo
     set path get-path patch-here target
   ]
   
-  draw-path
+  ask players [ draw-path ]
 end
 
 
 
 to draw-path
-  ask points [ die ]
-  clear-links
+;  ask points [ die ]
+;  clear-links
+  if is-list? path-points [ ask path-points [ die ] ]
+  if is-list? path-links [ ask path-links [ die ] ]
   
   if not draw-path? [ stop ]
+  
+  let player-color color
 
   let point-lists []
-  ask players [
-    if is-list? path [
-      set point-lists lput path point-lists
-    ]
+  if is-list? path [
+    set point-lists lput path point-lists
   ]
   
   foreach point-lists [
-    let previous-point false
+    let previous-point false 
     
     foreach ? [
-      create-points 1 [
+      hatch-points 1 [
         setxy first ? last ?
         set shape "dot"
         set color black
         
         if previous-point != false [
           create-link-with previous-point [
-            set color red
+            set color player-color
           ]
         ]
         
@@ -63,9 +65,8 @@ to select-goal
         ask players [
           set target patch mouse-xcor mouse-ycor
           set path get-path patch-here target
+          draw-path
         ]
-        
-        draw-path
         stop
       ]
     ]
@@ -75,30 +76,31 @@ end
 
 
 to update-navmesh-display
-  ;toggle-color-navmesh
+  toggle-color-navmesh
   toggle-label-navmesh
 end
 
 
 
-;to toggle-color-navmesh
-;  let node-colors ifelse-value color-navmesh? [
-;    filter [ ? != black ] base-colors
-;  ] [
-;    [ green ]
-;  ]
-;  let index 0
-;
-;  foreach navmesh [
-;    foreach ? [
-;      ask ? [
-;        set pcolor item index node-colors
-;      ]
-;    ]
-;
-;    set index ifelse-value (index + 1 = length node-colors) [ 0 ] [ index + 1 ]
-;  ]
-;end
+to toggle-color-navmesh
+  ifelse color-navmesh? [
+    let node-colors filter [ ? != black ] base-colors
+    let index 0
+    
+    foreach navmesh [
+      foreach ? [
+        ask ? [
+          set pcolor item index node-colors
+        ]
+      ]
+      set index ifelse-value (index + 1 = length node-colors) [ 0 ] [ index + 1 ]
+    ]
+  ] [
+    ask patches [
+      set pcolor default-color
+    ]
+  ]
+end
 
 
 

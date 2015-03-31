@@ -30,8 +30,16 @@ players-own [
   state ;; defines what kind of behaviour the turtle has e.g Alert, capturing flag, defending flag
   target
   path
+  path-points
+  path-links
   playerDirection
   in-prisoned
+  previousState
+  stateChanged
+]
+
+patches-own [
+  default-color
 ]
 
 __includes [ "navmesh.nls" "pathfinding.nls" "navigation.nls" "navigation demo.nls" "flagRelated.nls" "scoreRelated.nls" "stateRelated.nls" ]
@@ -47,7 +55,7 @@ to setup
   set-default-shape tree "tree"
   set-default-shape flagRED "flag"
   set-default-shape flagBLUE "flag"
-  set-default-shape jail "circle 2"
+  set-default-shape prisons "circle 2"
   set-default-shape players "person"
 
 ;  setup-patches
@@ -55,17 +63,14 @@ to setup
 ;  setup-pathfinding
    setup-patches
 
-  if navigation-demo?
-  [
+  ifelse navigation-demo? [
     create-trees
     setup-navmesh
     setup-pathfinding
-  ]
-
-  ifelse navigation-demo? [
     setup-navigation-demo
-  ]
-  [
+  ] [
+    set redBool false
+    set blueBool false
     setup-flags
     setup-players
     create-jails
@@ -73,19 +78,22 @@ to setup
     ;;navmesh & pathfinder under here
     setup-navmesh
     setup-pathfinding
-    setup-patches
+;    setup-patches
     set-startGame-state
   ]
 
 end
 
 
-
 to setup-patches
-  ask patches
-    [ set pcolor green ]
-  ask patches with [pxcor <= 17 and pxcor >= 15]
-    [ set pcolor blue ]
+  ask patches [
+    set pcolor green
+    set default-color green
+  ]
+  ask patches with [pxcor <= 17 and pxcor >= 15] [
+    set pcolor 107
+    set default-color 107
+  ]
 end
 
 to-report random-between [ min-num max-num ]
@@ -112,11 +120,11 @@ to setup-players
 end
 
 to create-jails
-  create-jail 1 [set color red
+  create-prisons 1 [set color red
                    setxy random-between (min-pxcor) 5 random-ycor]
-  create-jail 1 [set color blue
+  create-prisons 1 [set color blue
                    setxy random-between 27 (max-pxcor) random-ycor]
-  ask jail
+  ask prisons
   [set pcolor 32]
 end
 
@@ -135,17 +143,16 @@ end
 
 
 to go
-  ;;set spawns
-  ;;set flags
-  ;;move players
 
   update-navmesh-display
 
   ask players [
     follow-path
+    check-state-Changed
+    check-state
+
+    set-state
   ]
-  
-  draw-path
 
   tick
 end
@@ -156,9 +163,7 @@ end
 
 to set-startGame-state
 
-  ;;let bluePlayerCount count players with [color = blue]
   let redPlayerCount count players with [color = red]
-
   let half redPlayerCount / 2
   let redCounter 0
   let blueCounter 0
@@ -170,6 +175,7 @@ to set-startGame-state
     ifelse(redCounter > half)[
         set state "attackflag"
         set path get-path patch-here first [ patch-here ] of flagBLUE
+        draw-path
     ][ set state "defendflag" ]
   ]
 
@@ -179,26 +185,40 @@ to set-startGame-state
     ifelse(blueCounter > half)[
         set state "attackflag"
         set path get-path patch-here first [ patch-here ] of flagRED
+        draw-path
     ][ set state "defendflag" ]
   ]
+
 end
 
+to check-state-changed ;;checks to see if the current player state has changed, if so, update
 
+  ask players[
+    if(state = previousState)[
+      set stateChanged false
+    ]
+
+    if(previousState != state)[
+      set stateChanged true
+    ]
+    set previousState state
+  ]
+
+end
 
 to set-state
     ;;below checks if enemies are in radius of player
-     ;;sets player to jail if enemy is too close
-
+    ;;sets player to jail if enemy is too close
 
     ask players with [color = blue][
      if(state != "jail")[
 
-      ifelse(any? other turtles in-radius 2)[ ;;if enemies in radius of player, player will evade else continues to run
+      if(any? players with [color = red] in-radius .01)[ ;;if enemies in radius of player, player will evade else continues to run
         set state "evade"
-      ][ set state "run" ]
+      ]
 
-       if(any? other players with [color = red] in-radius .2)[ ;;if enemy hits player, go to jail
-           set in-prisoned players
+       if(any? players with [color = red] in-radius .01)[ ;;if enemy hits player, go to jail
+          set in-prisoned players
           set state "jail"
        ]
      ]
@@ -206,11 +226,11 @@ to set-state
 
     ask players with [color = red][
       if(state != "jail")[
-      ifelse(any? other turtles in-radius 2)[
+      if(any? other turtles in-radius .01)[
          set state "evade"
-      ][ set state "run" ]
+      ]
 
-       if(any? other players with [color = blue] in-radius .2)[
+       if(any? other players with [color = blue] in-radius .01)[
         set in-prisoned players
         set state "jail"
        ]
@@ -220,72 +240,100 @@ to set-state
     ;;below sets state to free if teammate is closeby
 
      ask prisons with [color = red][
-       if(any? other players with[color = red] in-radius 1) ;;if teammate near prison, player in prison is free
+       if(any? players with[color = red] in-radius 1) ;;if teammate near prison, player in prison is free
        [
-        set state "freed"
+        ;;set state "freed"
        ]
       ]
 
      ask prisons with [color = blue][
-       if(any? other players with[color = red] in-radius 1)
+       if(any? players with[color = red] in-radius 1)
        [
-        set state "freed"
+         ;;set state "freed"
        ]
       ]
 
     flag-pickup ;;checks to see if any players picked up flag
 
-  ;; default state is standing/walking/running?
-  ;; other states: Capturing flag, Defending flag, Defending Capturer, Jailed, evade, run
+  ;; default state is attackflag/defendflag
 end
 
 
 
 
-to move
-  ;;;;;;;;;;;;;;;;;;;;
-  ;;FLAG STATE TYPES;;
-  ;;;;;;;;;;;;;;;;;;;;
+to check-state
 
-  if (state = "capture") [
-    ;;player has flag
-    ;;move towards direction of own teams flag
+ ask players[
+    output-show (state)
+    ;;output-show (stateChanged)
+
+ if(stateChanged = true)[
+
+  ;;default states
+
+  if(state = "attackflag")[
+    if(color = red)[
+      set path get-path patch-here first [ patch-here ] of flagBLUE
+    ]
+
+    if(color = blue)[
+       set path get-path patch-here first [ patch-here ] of flagRED
+    ]
   ]
 
-  if (state = "defendflag") [
-    ;;determine which turtle teammates will remain back to defend flag
+  if (state = "defendflag")[
+    if(color = red)[
+      ;;patrol radius around flag
+    ]
+
+    if(color = blue)[
+
+    ]
+  ]
+
+  ;;end default states
+
+  if (state = "capture") [
+    if(color = red)[
+      capture-flag
+    ]
+    if(color = blue)[
+         capture-flag
+    ]
+    set speed speed = 2
   ]
 
   if (state = "defendcapturer") [
     ;;other turtle teammates nearby will defend flag holder
+    defend-capturer
   ]
 
   if (state = "lostflag") [
     ;;team on alert trying to locate flag taker (soon as it's took, some move back to flag default location to find taker)
   ]
 
-  ;;;;;;;;;;;;;;;;;;;;;;;;
-  ;;MOVEMENT STATE TYPES;;
-  ;;;;;;;;;;;;;;;;;;;;;;;;
-
   if (state = "evade") [
     ;;move in direction the chaser is facing and move?
-    fd speed;
-  ]
-
-  if (state = "run") [
     set speed speed = 2
+    move-evade
   ]
-
 
   if (state = "rescue") [
     ;;save teamate from jail (be aimed at defenders or whoever is near the cell)
   ]
 
+  if(state = "freed")[
+    ;;spawn player out of prison
+
+  ]
+
   if (state = "jail") [
     ;;cannot do anything, await rescue
     set speed speed = 0
+    inprison-player
   ]
+ ]
+ ]
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
@@ -309,16 +357,16 @@ GRAPHICS-WINDOW
 32
 0
 32
-0
-0
+1
+1
 1
 ticks
 30.0
 
 BUTTON
-11
+7
 10
-74
+70
 43
 setup
 setup
@@ -358,32 +406,17 @@ player-count
 player-count
 2
 8
-8
+4
 2
 1
 NIL
 HORIZONTAL
 
-SLIDER
-79
-151
-251
-184
-obstacle-count-stub
-obstacle-count-stub
-0
-1024
-286
-1
-1
-NIL
-HORIZONTAL
-
 SWITCH
-91
-365
-245
-398
+30
+511
+184
+544
 navigation-demo?
 navigation-demo?
 1
@@ -398,10 +431,10 @@ OUTPUT
 12
 
 SWITCH
-83
-197
-225
-230
+23
+212
+165
+245
 color-navmesh?
 color-navmesh?
 1
@@ -409,10 +442,10 @@ color-navmesh?
 -1000
 
 SWITCH
-85
-246
-226
-279
+25
+261
+166
+294
 label-navmesh?
 label-navmesh?
 1
@@ -471,10 +504,10 @@ NIL
 1
 
 BUTTON
-158
-452
-250
-485
+199
+512
+291
+545
 NIL
 select-goal
 T
@@ -488,10 +521,10 @@ NIL
 1
 
 SWITCH
-19
-408
-163
-441
+25
+315
+169
+348
 smooth-path?
 smooth-path?
 0
@@ -507,17 +540,17 @@ player-speed
 player-speed
 0
 1
-0.05
+0.344
 0.001
 1
 NIL
 HORIZONTAL
 
 SWITCH
-24
-451
-143
-484
+30
+358
+149
+391
 draw-path?
 draw-path?
 0
@@ -525,10 +558,10 @@ draw-path?
 -1000
 
 BUTTON
-20
-494
-118
-527
+674
+490
+772
+523
 NIL
 output-path
 NIL

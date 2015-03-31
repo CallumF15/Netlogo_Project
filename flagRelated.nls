@@ -1,5 +1,11 @@
+globals[
+  redBool
+  blueBool
+  
+]
 
-to  flag-pickup
+to  flag-pickup 
+  ;;need to check to make sure a player already hasn't picked up flag!
 
   let redFlagPosX 0
   let redFlagPosY 0
@@ -10,7 +16,8 @@ to  flag-pickup
   let bluePlayerPosY 0
   let redPlayerPosX 0
   let redPlayerPosY 0
-  
+
+
   ask flagRED[
     set redFlagPosX xcor 
     set redFlagPosY ycor
@@ -21,25 +28,38 @@ to  flag-pickup
     set blueFlagPosY ycor
   ]
 
-   ask players with [color = blue][
+
+  ask players with [color = blue][
+   if(blueBool = false)[
     set bluePlayerPosX xcor
     set bluePlayerPosY ycor 
     
-    ask flagRED in-radius 2[
-       setxy bluePlayerPosX bluePlayerPosY
-       set state "capture"
+    ask flagRED in-radius 1.5[
+       setxy bluePlayerPosX bluePlayerPosY ;;blue team picked up flag
+       set blueBool true
      ]
-   ]
-   
-   ask players with [color = red][
-    set redPlayerPosX xcor
-    set redPlayerPosY ycor 
     
-    ask flagBLUE in-radius 2[
-       setxy redPlayerPosX redPlayerPosY ;;red team picked up flag
+    if(blueBool = true)[
        set state "capture"
     ]
    ]
+  ]
+   
+  ask players with [color = red][
+   if(redBool = false)[
+    set redPlayerPosX xcor
+    set redPlayerPosY ycor 
+    
+    ask flagBLUE in-radius 1.5[
+       setxy redPlayerPosX redPlayerPosY ;;red team picked up flag
+       set redBool true
+    ]
+        
+    if(redBool = true)[
+      set state "capture"
+    ]
+   ]
+  ]
 
 end
 
@@ -106,6 +126,12 @@ to capture-flag
    
    if(state = "capture" and redHasFlag = false)[
      ;;moves player to their flag 
+     set path get-path patch-here first [ patch-here ] of flagBLUE
+   ]
+   
+   if(state = "capture" and redHasFlag = true)[
+     set path get-path patch-here first [ patch-here ] of flagBLUE
+    ;;other attacker goes for flag? 
    ]
  ]
  
@@ -119,6 +145,12 @@ to capture-flag
    
    if(state = "capture" and blueHasFlag = false)[
      ;;moves player to their flag 
+     set path get-path patch-here first [ patch-here ] of flagRED
+   ]
+   
+    if(state = "capture" and blueHasFlag = true)[
+      set path get-path patch-here first [ patch-here ] of flagRED
+    ;;other attacker goes for flag? 
    ]
  ]
   
