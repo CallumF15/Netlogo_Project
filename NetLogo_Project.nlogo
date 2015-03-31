@@ -4,7 +4,6 @@ breed [ prisons prison ]
 breed [ tree ]
 breed [ flagRED ]
 breed [ flagBLUE ]
-breed [ jail ]
 
 ;;;;;;;;;;;;;;;
 ;; Variables ;;
@@ -21,6 +20,9 @@ globals [
   blue-prison      ;; blue prison occupancy
   red-prison       ;; red prison occupancy
   losing-score     ;; score required to lose
+  idValue
+  opponentColor 
+  teamColor 
 ]
 
 players-own [
@@ -36,6 +38,8 @@ players-own [
   in-prisoned
   previousState
   stateChanged
+  hasFlag
+  id
 ]
 
 patches-own [
@@ -69,12 +73,12 @@ to setup
     setup-pathfinding
     setup-navigation-demo
   ] [
-    set redBool false
-    set blueBool false
+    set defaultBool false
     setup-flags
     setup-players
     create-jails
     create-trees
+    set-player-id
     ;;navmesh & pathfinder under here
     setup-navmesh
     setup-pathfinding
@@ -105,8 +109,18 @@ end
 to setup-flags
   create-flagRED 1 [set color red
                  setxy random-between 2 5 random-between 2 30]
+  ask flagRED [ 
+    set redFlagSpawnPositionX xcor
+    set redFlagSpawnPositionY ycor
+  ]
+  
   create-flagBLUE 1 [set color blue
                  setxy random-between 27 30 random-between 2 30]
+  
+   ask flagBLUE [ 
+    set blueFlagSpawnPositionX xcor
+    set blueFlagSpawnPositionY ycor
+  ]
 end
 
 
@@ -140,6 +154,27 @@ to create-trees
 
 end
 
+to set-player-id
+  set idValue 0
+
+  ask players with [color = blue][
+    if(id <= player-count / 2)[
+    
+      set idValue idValue + 1
+      set id idValue
+    ]
+  ]
+  
+  set idValue 0
+  
+  ask players with [color = red][
+       if(id <= player-count)[
+      set idValue idValue + 1
+      set id idValue
+      ]
+  ] 
+end
+
 
 
 to go
@@ -147,12 +182,15 @@ to go
   update-navmesh-display
 
   ask players [
-    follow-path
-    check-state-Changed
-    check-state
-
-    set-state
+    follow-path 
   ]
+  
+  check-state-Changed
+  
+  check-state Players with [color = blue]
+  check-state Players with [color = red]
+  set-state Players with [color = blue]
+  set-state Players with [color = red]
 
   tick
 end
@@ -161,7 +199,7 @@ to get-turtle-position
 
 end
 
-to set-startGame-state
+to set-startGame-state ;;done 
 
   let redPlayerCount count players with [color = red]
   let half redPlayerCount / 2
@@ -176,7 +214,7 @@ to set-startGame-state
         set state "attackflag"
         set path get-path patch-here first [ patch-here ] of flagBLUE
         draw-path
-    ][ set state "defendflag" ]
+    ][ set state "wait" ]
   ]
 
   ask players with [color = blue]
@@ -186,121 +224,151 @@ to set-startGame-state
         set state "attackflag"
         set path get-path patch-here first [ patch-here ] of flagRED
         draw-path
-    ][ set state "defendflag" ]
+    ][ set state "wait" ]
   ]
 
 end
 
-to check-state-changed ;;checks to see if the current player state has changed, if so, update
+to check-state-changed ;;checks to see if the current player state has changed
 
   ask players[
+   ;; output-show(word "before State " previousState)
+    
     if(state = previousState)[
       set stateChanged false
     ]
 
     if(previousState != state)[
       set stateChanged true
+      set previousState state ;;if state hasn't changed, why assign it to previousState?
+      ;;output-show(word "stateChanged " stateChanged)
     ]
-    set previousState state
+    ;;output-show(word "after State " previousState)
   ]
 
 end
 
-to set-state
+to revert-state [player];;sets state back to last state
+  
+ask player[
+  if(state != previousState)[ ;;make sure its not the same
+    set state previousState 
+  ]
+]
+  
+end
+
+to set-state[player]
     ;;below checks if enemies are in radius of player
     ;;sets player to jail if enemy is too close
 
-    ask players with [color = blue][
-     if(state != "jail")[
-
-      if(any? players with [color = red] in-radius .01)[ ;;if enemies in radius of player, player will evade else continues to run
+    ifelse(any? player with [color = red])[
+       set opponentColor blue
+       set teamColor red
+    ][ set opponentColor red 
+       set teamColor blue ]
+    
+    ask player[
+      if(state != "jail")[
+        if(any? players with [color = opponentColor] in-radius .01)[ ;;if enemies in radius of player, player will evade else continues to run
         set state "evade"
       ]
 
-       if(any? players with [color = red] in-radius .01)[ ;;if enemy hits player, go to jail
+       if(any? players with [color = opponentColor and state != "jail"] in-radius .01)[ ;;if enemy hits player, go to jail
           set in-prisoned players
           set state "jail"
-       ]
-     ]
-    ]
-
-    ask players with [color = red][
-      if(state != "jail")[
-      if(any? other turtles in-radius .01)[
-         set state "evade"
-      ]
-
-       if(any? other players with [color = blue] in-radius .01)[
-        set in-prisoned players
-        set state "jail"
        ]
       ]
     ]
 
     ;;below sets state to free if teammate is closeby
-
-     ask prisons with [color = red][
-       if(any? players with[color = red] in-radius 1) ;;if teammate near prison, player in prison is free
+    
+     ask prisons with [color = teamColor][
+        ask player with[color = teamColor] in-radius .2;;if teammate near prison, player in prison is free
        [
-        ;;set state "freed"
+        set state "freed" 
        ]
       ]
 
-     ask prisons with [color = blue][
-       if(any? players with[color = red] in-radius 1)
-       [
-         ;;set state "freed"
-       ]
+    flag-pickup player ;;checks to see if any players picked up flag
+    
+    ;;below checks if any players have flag
+    
+    ask player with [hasFlag = true][
+      if(any? players with [color = opponentColor and hasFlag = false])[
+        set state "defendcapturer"
       ]
+    ]
+    
+    let flag 0
+   ask player with [color = teamColor] [
+     let blah false
+     if(teamColor = blue)[ set flag flagBLUE ]
+     if(teamColor = red) [ set flag flagRED  ]
+     
+     ask flag in-radius 1[
+        if(any? players with [color = opponentColor] in-radius 1)[
+          set blah true
+        ]
+     ]
+     
+     if(blah = true)[ set state "defendflag" ]
+   ]  
+  
+   
+   
 
-    flag-pickup ;;checks to see if any players picked up flag
-
-  ;; default state is attackflag/defendflag
+    
+    
+    ;;below checks to see if enemy flag is in-radius of own-team flag
+    ;;doesn't take into account 2 flags passing by each other
+    
+    flag-captured
 end
 
 
 
 
-to check-state
+to check-state[player]
 
- ask players[
-    output-show (state)
-    ;;output-show (stateChanged)
+ ask player[
 
  if(stateChanged = true)[
-
+ output-show (state)
   ;;default states
 
-  if(state = "attackflag")[
-    if(color = red)[
-      set path get-path patch-here first [ patch-here ] of flagBLUE
+  if(state = "attackflag")[ ;;done
+    if(teamColor = red)[
+      set path get-path patch-here first [ patch-here ] of flagRED
     ]
 
-    if(color = blue)[
+    if(teamColor = blue)[
        set path get-path patch-here first [ patch-here ] of flagRED
     ]
   ]
 
   if (state = "defendflag")[
-    if(color = red)[
-      ;;patrol radius around flag
+    if(teamColor = red)[
+      
+         set path get-path patch-here first [ patch-here ] of players
     ]
 
-    if(color = blue)[
-
+    if(teamColor = blue)[
+       if(any? players with [color = red] in-radius 1)[
+         set path get-path patch-here first [ patch-here ] of players
+      ]
     ]
   ]
 
   ;;end default states
 
   if (state = "capture") [
-    if(color = red)[
+    if(teamColor = red)[
       capture-flag
     ]
-    if(color = blue)[
-         capture-flag
+    if(teamColor = blue)[
+      capture-flag
     ]
-    set speed speed = 2
   ]
 
   if (state = "defendcapturer") [
@@ -314,21 +382,19 @@ to check-state
 
   if (state = "evade") [
     ;;move in direction the chaser is facing and move?
-    set speed speed = 2
-    move-evade
+    move-evade ;; needs changed
   ]
 
   if (state = "rescue") [
     ;;save teamate from jail (be aimed at defenders or whoever is near the cell)
   ]
 
-  if(state = "freed")[
+  if(state = "freed")[ ;;think this works, just need to get player to rescue
     ;;spawn player out of prison
-
+    release-player
   ]
 
-  if (state = "jail") [
-    ;;cannot do anything, await rescue
+  if (state = "jail") [ ;;this works
     set speed speed = 0
     imprison-player
   ]
@@ -364,9 +430,9 @@ ticks
 30.0
 
 BUTTON
-7
+8
 10
-70
+71
 43
 setup
 setup
@@ -540,7 +606,7 @@ player-speed
 player-speed
 0
 1
-0.344
+0.127
 0.001
 1
 NIL
@@ -553,7 +619,7 @@ SWITCH
 391
 draw-path?
 draw-path?
-0
+1
 1
 -1000
 
@@ -577,23 +643,25 @@ NIL
 @#$#@#$#@
 ## WHAT IS IT?
 
-(Capture the Flag game in which both teams have to capture the flag and return it too their own base.)
+Capture the Flag game in which both teams have to capture the flag and return it too their own base.
 
 ## HOW IT WORKS
 
-(Both turtles are assigned to teams and have different states depending on which actions they can take.)
+Both turtles are assigned to teams and have different states depending on which actions they can take.
+
+The forest layout is generated at the start of a game along with a navigation mesh for pathfinding.
 
 ## HOW TO USE IT
 
-(Pressing setup creates the game, go plays the game, player count sets up the number of players in the game.)
+Pressing setup creates the game, go plays the game, player count sets up the number of players in the game.
 
 ## THINGS TO NOTICE
 
-(Notice the path that the player takes, the state that the players are in, the level being generated.)
+Notice the path that the player takes, the state that the players are in, the level being generated.
 
 ## THINGS TO TRY
 
-(Change the number of players, change the sped of the players, change the number of trees, set up an navigation demo and then selecting a goal for the player to travel to.)
+Change the number of players, change the sped of the players, change the number of trees, set up an navigation demo and then selecting a goal for the player to travel to.
 
 ## EXTENDING THE MODEL
 
@@ -601,14 +669,15 @@ NIL
 
 ## NETLOGO FEATURES
 
-(Pathfinding for players, the changing of many states and random between two numbers.)
+Pathfinding for players, the changing of many states and random between two numbers.
 
 ## RELATED MODELS
 
-(There are no models in the model library. We are the first to come up with this idea.)
+There are no models in the model library. We are the first to come up with this idea.
 
 ## CREDITS AND REFERENCES
  
+<<<<<<< HEAD
 (Members-
 	 Mathew Mitchell
 	 Mathew McGerty
@@ -617,6 +686,18 @@ NIL
  Link we use?
 	file:///C:/Program%20Files%20(x86)/NetLogo%205.2-RC2/docs/infotab.html.
 )
+=======
+Members-
+
+ * Mathew Mitchell
+ * Mathew McGerty
+ * Chinglong Law
+ * Callum Flannagan
+
+Link we use?
+
+ * Dont remember.
+>>>>>>> origin/master
 @#$#@#$#@
 default
 true
@@ -924,7 +1005,11 @@ Polygon -7500403 true true 270 75 225 30 30 225 75 270
 Polygon -7500403 true true 30 75 75 30 270 225 225 270
 
 @#$#@#$#@
+<<<<<<< HEAD
 NetLogo 5.2-RC2
+=======
+NetLogo 5.2-RC3
+>>>>>>> origin/master
 @#$#@#$#@
 @#$#@#$#@
 @#$#@#$#@

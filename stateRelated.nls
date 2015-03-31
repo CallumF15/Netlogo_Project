@@ -22,7 +22,7 @@ to imprison-player
         set redprisonY ycor
       ]
       setxy redprisonX redprisonY
-
+      set path get-path patch-here first [ patch-here ] of prisons with [color = red]
       set red-prison red-prison + 1
     ]
     ]
@@ -34,7 +34,7 @@ to imprison-player
         set blueprisonY ycor
       ]
       setxy blueprisonX blueprisonY
-
+      set path get-path patch-here first [ patch-here ] of prisons with [color = blue]
       set blue-prison blue-prison + 1
     ]
     ]
@@ -92,32 +92,40 @@ to move-evade ;;sets players direction to almost same direction as enemy to esca
       [
          let c random heading
          set heading c
+         
       ][ if(random heading < playerDirection - directionOffset)
       [
         let d random heading
         set heading d
       ]
       ]
+      
+      fd 2
   ]
+  
 end
 
 to defend-capturer
+  
+  let redPosX 0
+  let redPosY 0
+  let bluePosX 0
+  let bluePosY 0
 
+if(color = red)[
+  ;;let targetblah one-of players with [ color = red and hasFlag = true ]
+ ;; if targetblah != nobody [ set path get-path patch-here first [ patch-here ] of targetblah]
+ 
+  set path get-path patch-here first [ patch-here ] of players with [color = red and hasFlag = true]
+]
 
-  ask players with [color = blue][
-    if(state = "capture")[
-      
-    ]
+if(color = blue)[
+   
+  ;;let targetblah one-of players with [ color = blue and hasFlag = true ]
+  set path get-path patch-here first [ patch-here ] of players with [color = blue and hasFlag = true]
+]
+  
 
-
-    ;;check if any near by teamates
-    ;;if so, move to capturers position to defend
-  ]
-
-  ask players with [color = red][
-
-
-  ]
 end
 
 to defend-flag
