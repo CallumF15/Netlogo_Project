@@ -21,6 +21,7 @@ globals [
   blue-prison      ;; blue prison occupancy
   red-prison       ;; red prison occupancy
   losing-score     ;; score required to lose
+  idValue
 ]
 
 players-own [
@@ -36,6 +37,8 @@ players-own [
   in-prisoned
   previousState
   stateChanged
+  hasFlag
+  id
 ]
 
 patches-own [
@@ -75,6 +78,7 @@ to setup
     setup-players
     create-jails
     create-trees
+    set-player-id
     ;;navmesh & pathfinder under here
     setup-navmesh
     setup-pathfinding
@@ -140,6 +144,27 @@ to create-trees
 
 end
 
+to set-player-id
+  set idValue 0
+
+  ask players with [color = blue][
+    if(id <= player-count / 2)[
+    
+      set idValue idValue + 1
+      set id idValue
+    ]
+  ]
+  
+  set idValue 0
+  
+  ask players with [color = red][
+       if(id <= player-count)[
+      set idValue idValue + 1
+      set id idValue
+      ]
+  ] 
+end
+
 
 
 to go
@@ -148,11 +173,13 @@ to go
 
   ask players [
     follow-path
-    check-state-Changed
-    check-state
-
-    set-state
+    
+    
   ]
+  
+  check-state-Changed
+  check-state
+  set-state
 
   tick
 end
@@ -191,7 +218,7 @@ to set-startGame-state
 
 end
 
-to check-state-changed ;;checks to see if the current player state has changed, if so, update
+to check-state-changed ;;checks to see if the current player state has changed
 
   ask players[
     if(state = previousState)[
@@ -254,6 +281,21 @@ to set-state
       ]
 
     flag-pickup ;;checks to see if any players picked up flag
+    
+    ;;below checks if any players have flag
+    
+
+    ask players with [color = red and hasFlag = true][
+      if(any? players with [color = red and state = "attackflag" and hasFlag = false])[
+        set state "defendcapturer"
+      ]
+    ]
+    
+    ask players with [color = blue and hasFlag = true][
+      if(any? players with [color = blue and state = "attackflag" and hasFlag = false])[
+        set state "defendcapturer"
+      ]
+    ]
 
   ;; default state is attackflag/defendflag
 end
@@ -284,10 +326,15 @@ to check-state
   if (state = "defendflag")[
     if(color = red)[
       ;;patrol radius around flag
+      if(any? players with [color = blue] in-radius 1)[
+         set path get-path patch-here first [ patch-here ] of players
+      ]
     ]
 
     if(color = blue)[
-
+       if(any? players with [color = red] in-radius 1)[
+         set path get-path patch-here first [ patch-here ] of players
+      ]
     ]
   ]
 
@@ -298,6 +345,7 @@ to check-state
       capture-flag
     ]
     if(color = blue)[
+         
          capture-flag
     ]
     set speed speed = 2
@@ -364,9 +412,9 @@ ticks
 30.0
 
 BUTTON
-7
+8
 10
-70
+71
 43
 setup
 setup
@@ -540,7 +588,7 @@ player-speed
 player-speed
 0
 1
-0.344
+0.478
 0.001
 1
 NIL
@@ -928,7 +976,7 @@ Polygon -7500403 true true 270 75 225 30 30 225 75 270
 Polygon -7500403 true true 30 75 75 30 270 225 225 270
 
 @#$#@#$#@
-NetLogo 5.0.5
+NetLogo 5.2-RC3
 @#$#@#$#@
 @#$#@#$#@
 @#$#@#$#@

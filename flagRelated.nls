@@ -2,6 +2,9 @@ globals[
   redBool
   blueBool
   
+  bluehasFlagID
+  redHasFlagID
+  
 ]
 
 to  flag-pickup 
@@ -30,62 +33,90 @@ to  flag-pickup
 
 
   ask players with [color = blue][
-   if(blueBool = false)[
+    if(bluebool = false)[
     set bluePlayerPosX xcor
     set bluePlayerPosY ycor 
     
-    ask flagRED in-radius 1.5[
-       setxy bluePlayerPosX bluePlayerPosY ;;blue team picked up flag
-       set blueBool true
+    
+    ask flagRED in-radius 1[
+       set bluebool true
+       ;;setxy bluePlayerPosX bluePlayerPosY ;;blue team picked up flag
      ]
     
-    if(blueBool = true)[
-       set state "capture"
+    if(bluebool = true)[
+       set blueHasFlagID id
+       set hasFlag true
     ]
-   ]
+    ] 
+    
+    if(blueBool = true and blueHasFlagID = id)[
+        output-show(id)
+        set bluePlayerPosX xcor
+        set bluePlayerPosY ycor 
+        set state "capture"
+        ask flagRED in-radius 1[
+        setxy bluePlayerPosX bluePlayerPosY ;;blue team picked up flag
+     ]
+    ]
+    
+    if(any? other players with [hasFlag = false and color = blue])[
+      set state "defendcapturer"
+    ]
   ]
    
   ask players with [color = red][
-   if(redBool = false)[
+    if(redbool = false)[
     set redPlayerPosX xcor
     set redPlayerPosY ycor 
     
-    ask flagBLUE in-radius 1.5[
-       setxy redPlayerPosX redPlayerPosY ;;red team picked up flag
-       set redBool true
+    
+    ask flagBLUE in-radius 1[
+       set redbool true
+       ;;setxy bluePlayerPosX bluePlayerPosY ;;blue team picked up flag
+     ]
+    if(redbool = true)[
+       set redHasFlagID id
     ]
-        
-    if(redBool = true)[
-      set state "capture"
+    ] 
+    
+    if(redBool = true and redHasFlagID = id)[
+        output-show(id)
+        set redPlayerPosX xcor
+        set redPlayerPosY ycor 
+        set state "capture"
+        ask flagBLUE in-radius 1[
+        setxy redPlayerPosX redPlayerPosY ;;blue team picked up flag
+        ]
     ]
-   ]
   ]
 
 end
 
 to flag-capture
-  
-  let blueHasFlag "false"
-  let redHasFlag "false"
 
-  if(blueHasFlag = "true")[
-     if(redHasFlag = "false")[
-    
-    
+  if(blueBool = "true" and redBool = "false")[
+
        ask flagBLUE in-radius 2[
          ;;flag captured
          respawn-flags
        ]
-     ]
   ]
 
-  if(redHasFlag = "true")[
-    if(blueHasFlag = "false")[
+  if(redBool = "true" and blueBool = "false")[
       
        ask flagRED in-radius 2[
          ;;flag captured
          respawn-flags
        ]
+  ]
+  
+  if(redBool = "true" and blueBool = "true")[ ;;both teams have flags
+    if(color = red)[
+      set state "lostflag"
+    ]
+    
+    if(color = blue)[
+      set state "lostflag"
     ]
   ]
   
