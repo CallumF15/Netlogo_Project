@@ -419,7 +419,7 @@ SWITCH
 544
 navigation-demo?
 navigation-demo?
-0
+1
 1
 -1000
 
@@ -577,23 +577,23 @@ NIL
 @#$#@#$#@
 ## WHAT IS IT?
 
-(Capture the Flag game in which both teams have to capture the flag and return it too their own base.)
+Capture the Flag game in which both teams have to capture the flag and return it too their own base.
 
 ## HOW IT WORKS
 
-(Both turtles are assigned to teams and have different states depending on which actions they can take.)
+Both turtles are assigned to teams and have different states depending on which actions they can take.
 
 ## HOW TO USE IT
 
-(Pressing setup creates the game, go plays the game, player count sets up the number of players in the game.)
+Pressing setup creates the game, go plays the game, player count sets up the number of players in the game.
 
 ## THINGS TO NOTICE
 
-(Notice the path that the player takes, the state that the players are in, the level being generated.)
+Notice the path that the player takes, the state that the players are in, the level being generated.
 
 ## THINGS TO TRY
 
-(Change the number of players, change the sped of the players, change the number of trees, set up an navigation demo and then selecting a goal for the player to travel to.)
+Change the number of players, change the sped of the players, change the number of trees, set up an navigation demo and then selecting a goal for the player to travel to.
 
 ## EXTENDING THE MODEL
 
@@ -601,22 +601,24 @@ NIL
 
 ## NETLOGO FEATURES
 
-(Pathfinding for players, the changing of many states and random between two numbers.)
+Pathfinding for players, the changing of many states and random between two numbers.
 
 ## RELATED MODELS
 
-(There are no models in the model library. We are the first to come up with this idea.)
+There are no models in the model library. We are the first to come up with this idea.
 
 ## CREDITS AND REFERENCES
  
-(Members-
-	 Mathew Mitchell
-	 Mathew McGerty
-	 Chinglong Law
-	 Callum Flannagan
- Link we use?
-	Dont remember.
-)
+Members-
+
+ * Mathew Mitchell
+ * Mathew McGerty
+ * Chinglong Law
+ * Callum Flannagan
+
+Link we use?
+
+ * Dont remember.
 @#$#@#$#@
 default
 true
