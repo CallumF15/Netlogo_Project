@@ -8,7 +8,7 @@
  end
 
 
-to imprison-player
+to inprison-player
 
     let redprisonX 0
     let redprisonY 0
@@ -41,7 +41,7 @@ to imprison-player
 
 end
 
-to free-player
+to release-player
 
   let redPrisonX 0
   let redPrisonY 0
@@ -78,9 +78,8 @@ end
 
 to move-evade ;;sets players direction to almost same direction as enemy to escape
 
-  let playerList players
 
-  ask playerList[
+  ask players[
 
     set playerDirection heading
 
@@ -107,7 +106,7 @@ to defend-capturer
 
   ask players with [color = blue][
     if(state = "capture")[
-
+      
     ]
 
 
@@ -121,11 +120,17 @@ to defend-capturer
   ]
 end
 
+to defend-flag
+  
+  set path get-path patch-here first [ patch-here ] of flagBLUE
+  
+  ;;set to patrol radius around flag
+  
+end
+
 to check-defeat
 
   if red-prison = losing-score [blue-victory]
   if blue-prison = losing-score [red-victory]
-
-
 
 end
