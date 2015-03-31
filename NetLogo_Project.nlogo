@@ -73,7 +73,8 @@ to setup
     setup-pathfinding
     setup-navigation-demo
   ] [
-    set defaultBool false
+    set redBool false
+    set blueBool false
     setup-flags
     setup-players
     create-jails
@@ -183,6 +184,7 @@ to go
 
   ask players [
     follow-path 
+    draw-path
   ]
   
   check-state-Changed
@@ -191,6 +193,8 @@ to go
   check-state Players with [color = red]
   set-state Players with [color = blue]
   set-state Players with [color = red]
+  
+  
 
   tick
 end
@@ -213,7 +217,7 @@ to set-startGame-state ;;done
     ifelse(redCounter > half)[
         set state "attackflag"
         set path get-path patch-here first [ patch-here ] of flagBLUE
-        draw-path
+        ;;draw-path
     ][ set state "wait" ]
   ]
 
@@ -223,7 +227,7 @@ to set-startGame-state ;;done
     ifelse(blueCounter > half)[
         set state "attackflag"
         set path get-path patch-here first [ patch-here ] of flagRED
-        draw-path
+        ;;draw-path
     ][ set state "wait" ]
   ]
 
@@ -292,16 +296,17 @@ to set-state[player]
 
     flag-pickup player ;;checks to see if any players picked up flag
     
-    ;;below checks if any players have flag
+    ;;below checks if any players have flag 
     
-    ask player with [hasFlag = true][
+    ask player with [hasFlag = true][ ;;somethings up with this
       if(any? players with [color = opponentColor and hasFlag = false])[
         set state "defendcapturer"
       ]
     ]
     
+    
     let flag 0
-   ask player with [color = teamColor] [
+   ask player with [color = teamColor and hasFlag = false and previousState != "attackflag"] [ ;;checks if players in-radius of flag
      let blah false
      if(teamColor = blue)[ set flag flagBLUE ]
      if(teamColor = red) [ set flag flagRED  ]
@@ -314,16 +319,9 @@ to set-state[player]
      
      if(blah = true)[ set state "defendflag" ]
    ]  
-  
-   
-   
-
     
     
-    ;;below checks to see if enemy flag is in-radius of own-team flag
-    ;;doesn't take into account 2 flags passing by each other
-    
-    flag-captured
+    flag-captured 
 end
 
 
@@ -606,7 +604,7 @@ player-speed
 player-speed
 0
 1
-0.127
+0.242
 0.001
 1
 NIL
@@ -677,16 +675,6 @@ There are no models in the model library. We are the first to come up with this 
 
 ## CREDITS AND REFERENCES
  
-<<<<<<< HEAD
-(Members-
-	 Mathew Mitchell
-	 Mathew McGerty
-	 Chinglong Law
-	 Callum Flannagan
- Link we use?
-	file:///C:/Program%20Files%20(x86)/NetLogo%205.2-RC2/docs/infotab.html.
-)
-=======
 Members-
 
  * Mathew Mitchell
@@ -697,7 +685,6 @@ Members-
 Link we use?
 
  * Dont remember.
->>>>>>> origin/master
 @#$#@#$#@
 default
 true
@@ -1005,11 +992,7 @@ Polygon -7500403 true true 270 75 225 30 30 225 75 270
 Polygon -7500403 true true 30 75 75 30 270 225 225 270
 
 @#$#@#$#@
-<<<<<<< HEAD
-NetLogo 5.2-RC2
-=======
 NetLogo 5.2-RC3
->>>>>>> origin/master
 @#$#@#$#@
 @#$#@#$#@
 @#$#@#$#@

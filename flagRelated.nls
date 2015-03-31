@@ -1,20 +1,20 @@
 globals[
   redBool
   blueBool
-  defaultBool
-  defaultFlagID
+  redFlagID
+  blueFlagID
   
-  redFlagSpawnPositionX
-  redFlagSpawnPositionY
-  blueFlagSpawnPositionX
-  blueFlagSpawnPositionY
+  redFlagSpawnPositionX ;;default spawn location of red flag X position
+  redFlagSpawnPositionY ;;default spawn location of red flag Y position
+  blueFlagSpawnPositionX ;;default spawn location of blue flag X position
+  blueFlagSpawnPositionY ;;default spawn location of blue flag Y position
 ]
 
 to flag-pickup[player] ;;parsely working
   let FlagPosX 0
   let FlagPosY 0
   let defaultFlag 0
-
+  
 if(teamColor = red)[
   ask flagBLUE[
     set FlagPosX xcor 
@@ -32,32 +32,52 @@ if(teamColor = blue)[
 ]
 
  ask player[
-   if(defaultBool = false)[
+   if(blueBool = false and color = blue)[
 
-   ask defaultFlag in-radius 1.5[
-       set defaultBool true
+   ask defaultFlag in-radius 1[
+       set blueBool true
    ]
     
-    if(defaultBool = true)[
-       set defaultFlagID id
+    if(blueBool = true)[
+       set blueFlagID id
        set hasFlag true
     ]
    ]
    
-   ifelse(teamColor = blue)[
-     set blueBool defaultBool
-   ][ set redBool defaultBool ]
-   
-    if(defaultBool = true and defaultFlagID = id)[
+    if(blueBool = true and blueFlagID = id)[
         let PlayerPosX xcor
         let PlayerPosY ycor 
         set state "capture"
         
-        ask defaultFlag in-radius 1.5[
+        ask defaultFlag in-radius 1[
         setxy PlayerPosX PlayerPosY ;;team picked up flag
-        ]
     ]
  ]
+]
+
+  ask player[
+   if(redBool = false and color = red)[
+
+   ask defaultFlag in-radius 1[
+       set redBool true
+   ]
+    
+    if(redBool = true)[
+       set redFlagID id
+       set hasFlag true
+    ]
+   ]
+      
+    if(redBool = true and redFlagID = id)[
+        let PlayerPosX xcor
+        let PlayerPosY ycor 
+        set state "capture"
+        
+        ask defaultFlag in-radius 1[
+        setxy PlayerPosX PlayerPosY ;;team picked up flag
+    ]
+ ]
+]
    
 end
 
@@ -65,27 +85,44 @@ to respawn-blue-flags
   
   set blue-score blue-score + 1
   ask flagBLUE [ die ]
-  create-flags 1 [ set color blue setxy blueFlagSpawnPositionX blueFlagSpawnPositionY ]
+  create-flagBLUE 1 [ set color blue setxy blueFlagSpawnPositionX blueFlagSpawnPositionY set shape "flag"]
 end
 
 to respawn-red-flags
   set red-score red-score + 1
   ask flagRED [die]
-  create-flags 1 [ set color red setxy redFlagSpawnPositionX redFlagSpawnPositionY ]
+  create-flagRED 1 [ set color red setxy redFlagSpawnPositionX redFlagSpawnPositionY set shape "flag"]
 end
 
 to flag-captured
   
-    ;;need to take global variables blueFlagSpawnPositionX (flag default position)
-    ;;and check if flag is there, and if enemyflag is in-radius of it then capture
-    
-    ask flagRED[
-     ask flagBLUE in-radius 1[
-     ;;blue flag captured 
-     ;;respawn-blue-flags
+    let redDefaultSpawn true
+    let blueDefaultSpawn true
+    let redIn-radius false
+    let blueIn-radius false
+        
+     ask flagRED[
+      if(xcor = redFlagSpawnPositionX and ycor = redFlagSpawnPositionY)[
+        set redDefaultSpawn true
+      ]
+      
+      ask flagBLUE in-radius 1[
+        set blueIn-radius true
+      ]
      ]
-    ]
-  
+      
+     ask flagBLUE[
+       if(xcor = blueFlagSpawnPositionX and ycor = blueFlagSpawnPositionY)[
+        set blueDefaultSpawn true
+       ]
+       
+        ask flagRED in-radius 1[
+          set redIn-radius true
+      ]
+     ]
+     
+     if(blueDefaultSpawn = true and redIn-radius) [ respawn-blue-flags ]
+     if(redDefaultSpawn = true and blueIn-radius) [ respawn-red-flags ]
 end
 
 
