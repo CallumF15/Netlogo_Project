@@ -38,6 +38,10 @@ players-own [
   stateChanged
 ]
 
+patches-own [
+  default-color
+]
+
 __includes [ "navmesh.nls" "pathfinding.nls" "navigation.nls" "navigation demo.nls" "flagRelated.nls" "scoreRelated.nls" "stateRelated.nls" ]
 
 ;;;;;;;;;;;;;;;;;;;;;;;;
@@ -59,17 +63,12 @@ to setup
 ;  setup-pathfinding
    setup-patches
 
-  if navigation-demo?
-  [
+  ifelse navigation-demo? [
     create-trees
     setup-navmesh
     setup-pathfinding
-  ]
-
-  ifelse navigation-demo? [
     setup-navigation-demo
-  ]
-  [
+  ] [
     set redBool false
     set blueBool false
     setup-flags
@@ -79,7 +78,7 @@ to setup
     ;;navmesh & pathfinder under here
     setup-navmesh
     setup-pathfinding
-    setup-patches
+;    setup-patches
     set-startGame-state
   ]
 
@@ -87,10 +86,14 @@ end
 
 
 to setup-patches
-  ask patches
-    [ set pcolor green ]
-  ask patches with [pxcor <= 17 and pxcor >= 15]
-    [ set pcolor 107 ]
+  ask patches [
+    set pcolor green
+    set default-color green
+  ]
+  ask patches with [pxcor <= 17 and pxcor >= 15] [
+    set pcolor 107
+    set default-color 107
+  ]
 end
 
 to-report random-between [ min-num max-num ]
@@ -141,10 +144,10 @@ end
 
 to go
 
+  update-navmesh-display
+
   ask players [
     follow-path
-
-    update-navmesh-display
     check-state-Changed
     check-state
 
@@ -409,26 +412,11 @@ player-count
 NIL
 HORIZONTAL
 
-SLIDER
-79
-151
-251
-184
-obstacle-count-stub
-obstacle-count-stub
-0
-1024
-254
-1
-1
-NIL
-HORIZONTAL
-
 SWITCH
-91
-365
-245
-398
+30
+511
+184
+544
 navigation-demo?
 navigation-demo?
 1
@@ -443,10 +431,10 @@ OUTPUT
 12
 
 SWITCH
-83
-197
-225
-230
+23
+212
+165
+245
 color-navmesh?
 color-navmesh?
 1
@@ -454,10 +442,10 @@ color-navmesh?
 -1000
 
 SWITCH
-85
-246
-226
-279
+25
+261
+166
+294
 label-navmesh?
 label-navmesh?
 1
@@ -516,10 +504,10 @@ NIL
 1
 
 BUTTON
-158
-452
-250
-485
+199
+512
+291
+545
 NIL
 select-goal
 T
@@ -533,10 +521,10 @@ NIL
 1
 
 SWITCH
-19
-408
-163
-441
+25
+315
+169
+348
 smooth-path?
 smooth-path?
 0
@@ -559,10 +547,10 @@ NIL
 HORIZONTAL
 
 SWITCH
-24
-451
-143
-484
+30
+358
+149
+391
 draw-path?
 draw-path?
 0
@@ -570,10 +558,10 @@ draw-path?
 -1000
 
 BUTTON
-20
-494
-118
-527
+674
+490
+772
+523
 NIL
 output-path
 NIL
