@@ -8,36 +8,38 @@ to setup-navigation-demo
     set path get-path patch-here target
   ]
   
-  draw-path
+  ask players [ draw-path ]
 end
 
 
 
 to draw-path
-  ask points [ die ]
-  clear-links
+;  ask points [ die ]
+;  clear-links
+  if is-list? path-points [ ask path-points [ die ] ]
+  if is-list? path-links [ ask path-links [ die ] ]
   
   if not draw-path? [ stop ]
+  
+  let player-color color
 
   let point-lists []
-  ask players [
-    if is-list? path [
-      set point-lists lput path point-lists
-    ]
+  if is-list? path [
+    set point-lists lput path point-lists
   ]
   
   foreach point-lists [
-    let previous-point false
+    let previous-point false 
     
     foreach ? [
-      create-points 1 [
+      hatch-points 1 [
         setxy first ? last ?
         set shape "dot"
         set color black
         
         if previous-point != false [
           create-link-with previous-point [
-            set color red
+            set color player-color
           ]
         ]
         
@@ -63,9 +65,8 @@ to select-goal
         ask players [
           set target patch mouse-xcor mouse-ycor
           set path get-path patch-here target
+          draw-path
         ]
-        
-        draw-path
         stop
       ]
     ]

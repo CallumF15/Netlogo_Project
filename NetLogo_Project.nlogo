@@ -30,6 +30,8 @@ players-own [
   state ;; defines what kind of behaviour the turtle has e.g Alert, capturing flag, defending flag
   target
   path
+  path-points
+  path-links
   playerDirection
   in-prisoned
 ]
@@ -144,8 +146,6 @@ to go
   ask players [
     follow-path
   ]
-  
-  draw-path
 
   tick
 end
@@ -170,6 +170,7 @@ to set-startGame-state
     ifelse(redCounter > half)[
         set state "attackflag"
         set path get-path patch-here first [ patch-here ] of flagBLUE
+        draw-path
     ][ set state "defendflag" ]
   ]
 
@@ -179,6 +180,7 @@ to set-startGame-state
     ifelse(blueCounter > half)[
         set state "attackflag"
         set path get-path patch-here first [ patch-here ] of flagRED
+        draw-path
     ][ set state "defendflag" ]
   ]
 end
