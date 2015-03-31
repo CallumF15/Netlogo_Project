@@ -92,13 +92,17 @@ to move-evade ;;sets players direction to almost same direction as enemy to esca
       [
          let c random heading
          set heading c
+         
       ][ if(random heading < playerDirection - directionOffset)
       [
         let d random heading
         set heading d
       ]
       ]
+      
+      fd 2
   ]
+  
 end
 
 to defend-capturer

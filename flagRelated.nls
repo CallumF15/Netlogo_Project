@@ -52,6 +52,7 @@ if(teamColor = blue)[
         let PlayerPosX xcor
         let PlayerPosY ycor 
         set state "capture"
+        
         ask defaultFlag in-radius 1.5[
         setxy PlayerPosX PlayerPosY ;;team picked up flag
         ]
@@ -64,12 +65,13 @@ to respawn-blue-flags
   
   set blue-score blue-score + 1
   ask flagBLUE [ die ]
-
+  create-flags 1 [ set color blue setxy blueFlagSpawnPositionX blueFlagSpawnPositionY ]
 end
 
 to respawn-red-flags
   set red-score red-score + 1
-  ask flagBLUE[die]
+  ask flagRED [die]
+  create-flags 1 [ set color red setxy redFlagSpawnPositionX redFlagSpawnPositionY ]
 end
 
 to flag-captured
@@ -80,7 +82,7 @@ to flag-captured
     ask flagRED[
      ask flagBLUE in-radius 1[
      ;;blue flag captured 
-     respawn-blue-flags
+     ;;respawn-blue-flags
      ]
     ]
   

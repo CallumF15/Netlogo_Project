@@ -199,7 +199,7 @@ to get-turtle-position
 
 end
 
-to set-startGame-state
+to set-startGame-state ;;done 
 
   let redPlayerCount count players with [color = red]
   let half redPlayerCount / 2
@@ -214,7 +214,7 @@ to set-startGame-state
         set state "attackflag"
         set path get-path patch-here first [ patch-here ] of flagBLUE
         draw-path
-    ][ set state "defendflag" ]
+    ][ set state "wait" ]
   ]
 
   ask players with [color = blue]
@@ -224,7 +224,7 @@ to set-startGame-state
         set state "attackflag"
         set path get-path patch-here first [ patch-here ] of flagRED
         draw-path
-    ][ set state "defendflag" ]
+    ][ set state "wait" ]
   ]
 
 end
@@ -232,16 +232,30 @@ end
 to check-state-changed ;;checks to see if the current player state has changed
 
   ask players[
+   ;; output-show(word "before State " previousState)
+    
     if(state = previousState)[
       set stateChanged false
     ]
 
     if(previousState != state)[
       set stateChanged true
+      set previousState state ;;if state hasn't changed, why assign it to previousState?
+      ;;output-show(word "stateChanged " stateChanged)
     ]
-    set previousState state
+    ;;output-show(word "after State " previousState)
   ]
 
+end
+
+to revert-state [player];;sets state back to last state
+  
+ask player[
+  if(state != previousState)[ ;;make sure its not the same
+    set state previousState 
+  ]
+]
+  
 end
 
 to set-state[player]
@@ -260,7 +274,7 @@ to set-state[player]
         set state "evade"
       ]
 
-       if(any? players with [color = opponentColor] in-radius .01)[ ;;if enemy hits player, go to jail
+       if(any? players with [color = opponentColor and state != "jail"] in-radius .01)[ ;;if enemy hits player, go to jail
           set in-prisoned players
           set state "jail"
        ]
@@ -286,13 +300,30 @@ to set-state[player]
       ]
     ]
     
-    ;;below checks to see if enemy flag is in-radius of own-team flag
+    let flag 0
+   ask player with [color = teamColor] [
+     let blah false
+     if(teamColor = blue)[ set flag flagBLUE ]
+     if(teamColor = red) [ set flag flagRED  ]
+     
+     ask flag in-radius 1[
+        if(any? players with [color = opponentColor] in-radius 1)[
+          set blah true
+        ]
+     ]
+     
+     if(blah = true)[ set state "defendflag" ]
+   ]  
+  
+   
+   
+
     
+    
+    ;;below checks to see if enemy flag is in-radius of own-team flag
     ;;doesn't take into account 2 flags passing by each other
     
     flag-captured
-    
-  ;; default state is attackflag/defendflag
 end
 
 
@@ -301,10 +332,9 @@ end
 to check-state[player]
 
  ask player[
-    output-show (state)
 
  if(stateChanged = true)[
-
+ output-show (state)
   ;;default states
 
   if(state = "attackflag")[ ;;done
@@ -319,15 +349,8 @@ to check-state[player]
 
   if (state = "defendflag")[
     if(teamColor = red)[
-     
-      ;; need to move player around flag-radius
-      ask flagRED in-radius 1[
-        
-      ]
       
-      if(any? players with [color = blue] in-radius 1)[
          set path get-path patch-here first [ patch-here ] of players
-      ]
     ]
 
     if(teamColor = blue)[
@@ -583,7 +606,7 @@ player-speed
 player-speed
 0
 1
-0.643
+0.127
 0.001
 1
 NIL
@@ -596,7 +619,7 @@ SWITCH
 391
 draw-path?
 draw-path?
-0
+1
 1
 -1000
 
