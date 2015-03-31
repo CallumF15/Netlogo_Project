@@ -1,147 +1,91 @@
 globals[
   redBool
   blueBool
+  defaultBool
+  defaultFlagID
   
-  bluehasFlagID
-  redHasFlagID
-  
+  redFlagSpawnPositionX
+  redFlagSpawnPositionY
+  blueFlagSpawnPositionX
+  blueFlagSpawnPositionY
 ]
 
-to  flag-pickup 
-  ;;need to check to make sure a player already hasn't picked up flag!
+to flag-pickup[player] ;;parsely working
+  let FlagPosX 0
+  let FlagPosY 0
+  let defaultFlag 0
 
-  let redFlagPosX 0
-  let redFlagPosY 0
-  let blueFlagPosX 0
-  let blueFlagPosY 0
-  
-  let bluePlayerPosX 0
-  let bluePlayerPosY 0
-  let redPlayerPosX 0
-  let redPlayerPosY 0
-
-
-  ask flagRED[
-    set redFlagPosX xcor 
-    set redFlagPosY ycor
-  ]
-  
+if(teamColor = red)[
   ask flagBLUE[
-    set blueFlagPosX xcor 
-    set blueFlagPosY ycor
+    set FlagPosX xcor 
+    set FlagPosY ycor
+    set defaultFlag flagBLUE
   ]
+]
 
+if(teamColor = blue)[
+  ask flagRED[
+    set FlagPosX xcor 
+    set FlagPosY ycor
+    set defaultFlag flagRED
+  ]
+]
 
-  ask players with [color = blue][
-    if(bluebool = false)[
-    set bluePlayerPosX xcor
-    set bluePlayerPosY ycor 
+ ask player[
+   if(defaultBool = false)[
+
+   ask defaultFlag in-radius 1.5[
+       set defaultBool true
+   ]
     
-    
-    ask flagRED in-radius 1[
-       set bluebool true
-       ;;setxy bluePlayerPosX bluePlayerPosY ;;blue team picked up flag
-     ]
-    
-    if(bluebool = true)[
-       set blueHasFlagID id
+    if(defaultBool = true)[
+       set defaultFlagID id
        set hasFlag true
     ]
-    ] 
-    
-    if(blueBool = true and blueHasFlagID = id)[
-        output-show(id)
-        set bluePlayerPosX xcor
-        set bluePlayerPosY ycor 
-        set state "capture"
-        ask flagRED in-radius 1[
-        setxy bluePlayerPosX bluePlayerPosY ;;blue team picked up flag
-     ]
-    ]
-    
-    if(any? other players with [hasFlag = false and color = blue])[
-      set state "defendcapturer"
-    ]
-  ]
+   ]
    
-  ask players with [color = red][
-    if(redbool = false)[
-    set redPlayerPosX xcor
-    set redPlayerPosY ycor 
-    
-    
-    ask flagBLUE in-radius 1[
-       set redbool true
-       ;;setxy bluePlayerPosX bluePlayerPosY ;;blue team picked up flag
-     ]
-    if(redbool = true)[
-       set redHasFlagID id
-    ]
-    ] 
-    
-    if(redBool = true and redHasFlagID = id)[
-        output-show(id)
-        set redPlayerPosX xcor
-        set redPlayerPosY ycor 
+   ifelse(teamColor = blue)[
+     set blueBool defaultBool
+   ][ set redBool defaultBool ]
+   
+    if(defaultBool = true and defaultFlagID = id)[
+        let PlayerPosX xcor
+        let PlayerPosY ycor 
         set state "capture"
-        ask flagBLUE in-radius 1[
-        setxy redPlayerPosX redPlayerPosY ;;blue team picked up flag
+        ask defaultFlag in-radius 1.5[
+        setxy PlayerPosX PlayerPosY ;;team picked up flag
         ]
     ]
-  ]
-
+ ]
+   
 end
 
-to flag-capture
-
-  if(blueBool = "true" and redBool = "false")[
-
-       ask flagBLUE in-radius 2[
-         ;;flag captured
-         respawn-flags
-       ]
-  ]
-
-  if(redBool = "true" and blueBool = "false")[
-      
-       ask flagRED in-radius 2[
-         ;;flag captured
-         respawn-flags
-       ]
-  ]
+to respawn-blue-flags
   
-  if(redBool = "true" and blueBool = "true")[ ;;both teams have flags
-    if(color = red)[
-      set state "lostflag"
-    ]
-    
-    if(color = blue)[
-      set state "lostflag"
-    ]
-  ]
-  
-  
-end
-
-to respawn-flags
-
-let blueCaptured "false"
-let redCaptured "false"
-
-if(blueCaptured = "true")[
   set blue-score blue-score + 1
-  
-  ask flagRED [
-   die
-  ]
-   ;;create flag
-]
+  ask flagBLUE [ die ]
 
-if(redCaptured = "true")[
+end
+
+to respawn-red-flags
   set red-score red-score + 1
-]
+  ask flagBLUE[die]
+end
+
+to flag-captured
+  
+    ;;need to take global variables blueFlagSpawnPositionX (flag default position)
+    ;;and check if flag is there, and if enemyflag is in-radius of it then capture
+    
+    ask flagRED[
+     ask flagBLUE in-radius 1[
+     ;;blue flag captured 
+     respawn-blue-flags
+     ]
+    ]
   
 end
+
 
 to capture-flag
   
@@ -184,5 +128,18 @@ to capture-flag
     ;;other attacker goes for flag? 
    ]
  ]
+  
+end
+
+
+to retrieve-flag ;;locate flag (I have it as they already know), touch it, resets back to default position?
+  
+  ask players with [color = blue and hasFlag = false][ ;;players that don't have flag retrieve
+    set path get-path patch-here first [ patch-here ] of players with [color = red and hasFlag = true]
+  ] 
+  
+   ask players with [color = red and hasFlag = false][ ;;players that don't have flag retrieve
+    set path get-path patch-here first [ patch-here ] of players with [color = blue and hasFlag = true]
+  ] 
   
 end

@@ -4,7 +4,6 @@ breed [ prisons prison ]
 breed [ tree ]
 breed [ flagRED ]
 breed [ flagBLUE ]
-breed [ jail ]
 
 ;;;;;;;;;;;;;;;
 ;; Variables ;;
@@ -22,6 +21,8 @@ globals [
   red-prison       ;; red prison occupancy
   losing-score     ;; score required to lose
   idValue
+  opponentColor 
+  teamColor 
 ]
 
 players-own [
@@ -72,8 +73,7 @@ to setup
     setup-pathfinding
     setup-navigation-demo
   ] [
-    set redBool false
-    set blueBool false
+    set defaultBool false
     setup-flags
     setup-players
     create-jails
@@ -109,8 +109,18 @@ end
 to setup-flags
   create-flagRED 1 [set color red
                  setxy random-between 2 5 random-between 2 30]
+  ask flagRED [ 
+    set redFlagSpawnPositionX xcor
+    set redFlagSpawnPositionY ycor
+  ]
+  
   create-flagBLUE 1 [set color blue
                  setxy random-between 27 30 random-between 2 30]
+  
+   ask flagBLUE [ 
+    set blueFlagSpawnPositionX xcor
+    set blueFlagSpawnPositionY ycor
+  ]
 end
 
 
@@ -172,14 +182,15 @@ to go
   update-navmesh-display
 
   ask players [
-    follow-path
-    
-    
+    follow-path 
   ]
   
   check-state-Changed
-  check-state
-  set-state
+  
+  check-state Players with [color = blue]
+  check-state Players with [color = red]
+  set-state Players with [color = blue]
+  set-state Players with [color = red]
 
   tick
 end
@@ -233,105 +244,93 @@ to check-state-changed ;;checks to see if the current player state has changed
 
 end
 
-to set-state
+to set-state[player]
     ;;below checks if enemies are in radius of player
     ;;sets player to jail if enemy is too close
 
-    ask players with [color = blue][
-     if(state != "jail")[
-
-      if(any? players with [color = red] in-radius .01)[ ;;if enemies in radius of player, player will evade else continues to run
+    ifelse(any? player with [color = red])[
+       set opponentColor blue
+       set teamColor red
+    ][ set opponentColor red 
+       set teamColor blue ]
+    
+    ask player[
+      if(state != "jail")[
+        if(any? players with [color = opponentColor] in-radius .01)[ ;;if enemies in radius of player, player will evade else continues to run
         set state "evade"
       ]
 
-       if(any? players with [color = red] in-radius .01)[ ;;if enemy hits player, go to jail
+       if(any? players with [color = opponentColor] in-radius .01)[ ;;if enemy hits player, go to jail
           set in-prisoned players
           set state "jail"
-       ]
-     ]
-    ]
-
-    ask players with [color = red][
-      if(state != "jail")[
-      if(any? other turtles in-radius .01)[
-         set state "evade"
-      ]
-
-       if(any? other players with [color = blue] in-radius .01)[
-        set in-prisoned players
-        set state "jail"
        ]
       ]
     ]
 
     ;;below sets state to free if teammate is closeby
-
-     ask prisons with [color = red][
-       if(any? players with[color = red] in-radius 1) ;;if teammate near prison, player in prison is free
+    
+     ask prisons with [color = teamColor][
+        ask player with[color = teamColor] in-radius .2;;if teammate near prison, player in prison is free
        [
-        ;;set state "freed"
+        set state "freed" 
        ]
       ]
 
-     ask prisons with [color = blue][
-       if(any? players with[color = red] in-radius 1)
-       [
-         ;;set state "freed"
-       ]
-      ]
-
-    flag-pickup ;;checks to see if any players picked up flag
+    flag-pickup player ;;checks to see if any players picked up flag
     
     ;;below checks if any players have flag
     
-
-    ask players with [color = red and hasFlag = true][
-      if(any? players with [color = red and state = "attackflag" and hasFlag = false])[
+    ask player with [hasFlag = true][
+      if(any? players with [color = opponentColor and hasFlag = false])[
         set state "defendcapturer"
       ]
     ]
     
-    ask players with [color = blue and hasFlag = true][
-      if(any? players with [color = blue and state = "attackflag" and hasFlag = false])[
-        set state "defendcapturer"
-      ]
-    ]
-
+    ;;below checks to see if enemy flag is in-radius of own-team flag
+    
+    ;;doesn't take into account 2 flags passing by each other
+    
+    flag-captured
+    
   ;; default state is attackflag/defendflag
 end
 
 
 
 
-to check-state
+to check-state[player]
 
- ask players[
+ ask player[
     output-show (state)
-    ;;output-show (stateChanged)
 
  if(stateChanged = true)[
 
   ;;default states
 
-  if(state = "attackflag")[
-    if(color = red)[
-      set path get-path patch-here first [ patch-here ] of flagBLUE
+  if(state = "attackflag")[ ;;done
+    if(teamColor = red)[
+      set path get-path patch-here first [ patch-here ] of flagRED
     ]
 
-    if(color = blue)[
+    if(teamColor = blue)[
        set path get-path patch-here first [ patch-here ] of flagRED
     ]
   ]
 
   if (state = "defendflag")[
-    if(color = red)[
-      ;;patrol radius around flag
+    if(teamColor = red)[
+     
+      ;; need to move player around flag-radius
+      ask flagRED in-radius 1[
+        
+      ]
+      
       if(any? players with [color = blue] in-radius 1)[
          set path get-path patch-here first [ patch-here ] of players
       ]
     ]
 
-    if(color = blue)[
+    if(teamColor = blue)[
        if(any? players with [color = red] in-radius 1)[
          set path get-path patch-here first [ patch-here ] of players
       ]
@@ -341,14 +340,12 @@ to check-state
   ;;end default states
 
   if (state = "capture") [
-    if(color = red)[
+    if(teamColor = red)[
       capture-flag
     ]
-    if(color = blue)[
-         
-         capture-flag
+    if(teamColor = blue)[
+      capture-flag
     ]
-    set speed speed = 2
   ]
 
   if (state = "defendcapturer") [
@@ -362,21 +359,19 @@ to check-state
 
   if (state = "evade") [
     ;;move in direction the chaser is facing and move?
-    set speed speed = 2
-    move-evade
+    move-evade ;; needs changed
   ]
 
   if (state = "rescue") [
     ;;save teamate from jail (be aimed at defenders or whoever is near the cell)
   ]
 
-  if(state = "freed")[
+  if(state = "freed")[ ;;think this works, just need to get player to rescue
     ;;spawn player out of prison
-
+    release-player
   ]
 
-  if (state = "jail") [
-    ;;cannot do anything, await rescue
+  if (state = "jail") [ ;;this works
     set speed speed = 0
     imprison-player
   ]
@@ -588,7 +583,7 @@ player-speed
 player-speed
 0
 1
-0.478
+0.643
 0.001
 1
 NIL
