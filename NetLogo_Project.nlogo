@@ -87,7 +87,7 @@ to setup-patches
   ask patches
     [ set pcolor green ]
   ask patches with [pxcor <= 17 and pxcor >= 15]
-    [ set pcolor blue ]
+    [ set pcolor 107 ]
 end
 
 to-report random-between [ min-num max-num ]
