@@ -14,10 +14,8 @@ end
 
 
 to draw-path
-;  ask points [ die ]
-;  clear-links
-  if is-list? path-points [ ask path-points [ die ] ]
-  if is-list? path-links [ ask path-links [ die ] ]
+  if is-list? path-points [ foreach path-points [ ask ? [ die ] ] ]
+  set path-points []
   
   if not draw-path? [ stop ]
   
@@ -28,6 +26,8 @@ to draw-path
     set point-lists lput path point-lists
   ]
   
+  let new-points []
+  
   foreach point-lists [
     let previous-point false 
     
@@ -36,6 +36,8 @@ to draw-path
         setxy first ? last ?
         set shape "dot"
         set color black
+        
+        set new-points lput self new-points
         
         if previous-point != false [
           create-link-with previous-point [
@@ -47,6 +49,8 @@ to draw-path
       ]
     ]
   ]
+  
+  set path-points new-points
 end
 
 

@@ -21,8 +21,8 @@ globals [
   red-prison       ;; red prison occupancy
   losing-score     ;; score required to lose
   idValue
-  opponentColor 
-  teamColor 
+  opponentColor
+  teamColor
 ]
 
 players-own [
@@ -33,7 +33,6 @@ players-own [
   target
   path
   path-points
-  path-links
   playerDirection
   in-prisoned
   previousState
@@ -110,15 +109,15 @@ end
 to setup-flags
   create-flagRED 1 [set color red
                  setxy random-between 2 5 random-between 2 30]
-  ask flagRED [ 
+  ask flagRED [
     set redFlagSpawnPositionX xcor
     set redFlagSpawnPositionY ycor
   ]
-  
+
   create-flagBLUE 1 [set color blue
                  setxy random-between 27 30 random-between 2 30]
-  
-   ask flagBLUE [ 
+
+   ask flagBLUE [
     set blueFlagSpawnPositionX xcor
     set blueFlagSpawnPositionY ycor
   ]
@@ -160,20 +159,20 @@ to set-player-id
 
   ask players with [color = blue][
     if(id <= player-count / 2)[
-    
+
       set idValue idValue + 1
       set id idValue
     ]
   ]
-  
+
   set idValue 0
-  
+
   ask players with [color = red][
        if(id <= player-count)[
       set idValue idValue + 1
       set id idValue
       ]
-  ] 
+  ]
 end
 
 
@@ -183,18 +182,18 @@ to go
   update-navmesh-display
 
   ask players [
-    follow-path 
+    follow-path
     draw-path
   ]
-  
+
   check-state-Changed
-  
+
   check-state Players with [color = blue]
   check-state Players with [color = red]
   set-state Players with [color = blue]
   set-state Players with [color = red]
-  
-  
+
+
 
   tick
 end
@@ -203,7 +202,7 @@ to get-turtle-position
 
 end
 
-to set-startGame-state ;;done 
+to set-startGame-state ;;done
 
   let redPlayerCount count players with [color = red]
   let half redPlayerCount / 2
@@ -237,7 +236,7 @@ to check-state-changed ;;checks to see if the current player state has changed
 
   ask players[
    ;; output-show(word "before State " previousState)
-    
+
     if(state = previousState)[
       set stateChanged false
     ]
@@ -253,13 +252,13 @@ to check-state-changed ;;checks to see if the current player state has changed
 end
 
 to revert-state [player];;sets state back to last state
-  
+
 ask player[
   if(state != previousState)[ ;;make sure its not the same
-    set state previousState 
+    set state previousState
   ]
 ]
-  
+
 end
 
 to set-state[player]
@@ -269,9 +268,9 @@ to set-state[player]
     ifelse(any? player with [color = red])[
        set opponentColor blue
        set teamColor red
-    ][ set opponentColor red 
+    ][ set opponentColor red
        set teamColor blue ]
-    
+
     ask player[
       if(state != "jail")[
         if(any? players with [color = opponentColor] in-radius .01)[ ;;if enemies in radius of player, player will evade else continues to run
@@ -286,42 +285,42 @@ to set-state[player]
     ]
 
     ;;below sets state to free if teammate is closeby
-    
+
      ask prisons with [color = teamColor][
         ask player with[color = teamColor] in-radius .2;;if teammate near prison, player in prison is free
        [
-        set state "freed" 
+        set state "freed"
        ]
       ]
 
     flag-pickup player ;;checks to see if any players picked up flag
-    
-    ;;below checks if any players have flag 
-    
+
+    ;;below checks if any players have flag
+
     ask player with [hasFlag = true][ ;;somethings up with this
       if(any? players with [color = opponentColor and hasFlag = false])[
         set state "defendcapturer"
       ]
     ]
-    
-    
+
+
     let flag 0
    ask player with [color = teamColor and hasFlag = false and previousState != "attackflag"] [ ;;checks if players in-radius of flag
      let blah false
      if(teamColor = blue)[ set flag flagBLUE ]
      if(teamColor = red) [ set flag flagRED  ]
-     
+
      ask flag in-radius 1[
         if(any? players with [color = opponentColor] in-radius 1)[
           set blah true
         ]
      ]
-     
+
      if(blah = true)[ set state "defendflag" ]
-   ]  
-    
-    
-    flag-captured 
+   ]
+
+
+    flag-captured
 end
 
 
@@ -347,7 +346,7 @@ to check-state[player]
 
   if (state = "defendflag")[
     if(teamColor = red)[
-      
+
          set path get-path patch-here first [ patch-here ] of players
     ]
 
@@ -674,7 +673,7 @@ Pathfinding for players, the changing of many states and random between two numb
 There are no models in the model library. We are the first to come up with this idea.
 
 ## CREDITS AND REFERENCES
- 
+
 Members-
 
  * Mathew Mitchell
