@@ -21,32 +21,31 @@ to draw-path
   
   let player-color color
 
-  let point-lists []
+  let point-list (list (list xcor ycor))
   if is-list? path [
-    set point-lists lput path point-lists
+    foreach path [
+      set point-list lput ? point-list
+    ]
   ]
   
   let new-points []
+  let previous-point false
   
-  foreach point-lists [
-    let previous-point false 
-    
-    foreach ? [
-      hatch-points 1 [
-        setxy first ? last ?
-        set shape "dot"
-        set color black
-        
-        set new-points lput self new-points
-        
-        if previous-point != false [
-          create-link-with previous-point [
-            set color player-color
-          ]
+  foreach point-list [
+    hatch-points 1 [
+      setxy first ? last ?
+      set shape "dot"
+      set color black
+      
+      set new-points lput self new-points
+      
+      if previous-point != false [
+        create-link-with previous-point [
+          set color player-color
         ]
-        
-        set previous-point self
       ]
+      
+      set previous-point self
     ]
   ]
   
@@ -156,7 +155,7 @@ end
 
 to output-path
   ask players [
-    ifelse not is-list? path or not empty? path [
+    ifelse not is-list? path and not empty? path [
       output-show (word "goal: " containing-node target " path: " path)
     ] [
       output-show (word "goal: " containing-node target " No path found")
