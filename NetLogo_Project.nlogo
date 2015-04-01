@@ -321,6 +321,25 @@ to set-state[player]
 
 
     flag-captured
+    
+    let counter 0
+    let boolRescueNeeded false
+    
+    ask player with [state = "jail"][
+       set counter counter + 1
+       
+       ifelse(counter >= player-count / 2)[
+         set boolRescueNeeded true
+       ][set boolRescueNeeded false ]
+    ]
+    
+    if(boolRescueNeeded = true)
+    [
+     ask player with [state != "jail"][
+       set state "rescue" 
+     ] 
+    ]
+    
 end
 
 
@@ -381,14 +400,18 @@ to check-state[player]
     ;;move in direction the chaser is facing and move?
     move-evade ;; needs changed
   ]
-
+  
   if (state = "rescue") [
     ;;save teamate from jail (be aimed at defenders or whoever is near the cell)
-  ]
+    if(teamColor = red) [ set path get-path patch-here first [ patch-here ] of prisons with [color = blue ]]
+    if(teamColor = blue) [ set path get-path patch-here first [ patch-here ] of prisons with [color = red ]]
 
-  if(state = "freed")[ ;;think this works, just need to get player to rescue
-    ;;spawn player out of prison
     release-player
+  ]
+  
+  if(state = "freed")[
+    if(color = red) [free-player red ]
+    if(color = blue) [free-player blue]
   ]
 
   if (state = "jail") [ ;;this works
@@ -469,7 +492,7 @@ player-count
 player-count
 2
 8
-4
+8
 2
 1
 NIL
@@ -603,7 +626,7 @@ player-speed
 player-speed
 0
 1
-0.242
+0.318
 0.001
 1
 NIL
@@ -646,7 +669,7 @@ tree-count
 tree-count
 0
 256
-223
+163
 1
 1
 NIL

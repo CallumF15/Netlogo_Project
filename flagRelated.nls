@@ -102,9 +102,9 @@ to flag-captured
     let blueIn-radius false
         
      ask flagRED[
-      if(xcor = redFlagSpawnPositionX and ycor = redFlagSpawnPositionY)[
+      ifelse(xcor = redFlagSpawnPositionX and ycor = redFlagSpawnPositionY)[
         set redDefaultSpawn true
-      ]
+      ][set redDefaultSpawn false]
       
       ask flagBLUE in-radius 1[
         set blueIn-radius true
@@ -112,17 +112,17 @@ to flag-captured
      ]
       
      ask flagBLUE[
-       if(xcor = blueFlagSpawnPositionX and ycor = blueFlagSpawnPositionY)[
+       ifelse(xcor = blueFlagSpawnPositionX and ycor = blueFlagSpawnPositionY)[
         set blueDefaultSpawn true
-       ]
+       ][ set blueDefaultSpawn false ]
        
         ask flagRED in-radius 1[
           set redIn-radius true
       ]
      ]
      
-     if(blueDefaultSpawn = true and redIn-radius) [ respawn-blue-flags ]
-     if(redDefaultSpawn = true and blueIn-radius) [ respawn-red-flags ]
+     if(blueDefaultSpawn = true and redIn-radius = true) [ respawn-blue-flags ]
+     if(redDefaultSpawn = true and blueIn-radius = true) [ respawn-red-flags ]
 end
 
 
