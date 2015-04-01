@@ -143,9 +143,9 @@ to create-jails
 end
 
 to create-trees
-  create-tree 200 [set color 53
+  create-tree tree-count [set color 53
                   setxy  random-between (min-pxcor) 14 random-ycor]
-  create-tree 200 [set color 53
+  create-tree tree-count [set color 53
                   setxy  random-between 18 (max-pxcor)  random-ycor]
   ask tree [if any? other turtles-here [die]]
 
@@ -616,7 +616,7 @@ SWITCH
 391
 draw-path?
 draw-path?
-1
+0
 1
 -1000
 
@@ -636,6 +636,21 @@ NIL
 NIL
 NIL
 1
+
+SLIDER
+10
+142
+182
+175
+tree-count
+tree-count
+0
+256
+223
+1
+1
+NIL
+HORIZONTAL
 
 @#$#@#$#@
 ## WHAT IS IT?
