@@ -1,0 +1,119 @@
+
+;;below is all the methods for "set-state" method
+
+to check-jail-evade[player]  ;;below checks if enemy is touching player, set player to jail & if are near, player will evade
+    
+    let evadeBoolean false
+    let jailBoolean false
+  
+    ask player[
+      if(state != "jail")[
+        ask players with [color = opponentColor] in-radius .2[ ;;if enemies in radius of player, player will evade else continues to run
+        set evadeBoolean true
+      ]
+      if(evadeBoolean = true)[ set state "evade" ]
+
+       ask players with [color = opponentColor and state != "jail"] in-radius .1[ ;;if enemy hits player, go to jail
+          set in-prisoned players
+          set jailBoolean true
+       ]
+       if(jailBoolean = true) [ set state "jail" ]
+      ]
+    ]
+  
+end
+
+to check-can-free-teammate[player]  ;;below checks if team-mate is in-radius of prison to free team-mates
+  
+    let inRadius false
+    
+     ask prisons with [color = teamColor][
+        ask player with[color = teamColor and state != "jail"] in-radius 1;if teammate near prison, player in prison is free
+       [
+        set inRadius true
+       ]
+      ]
+     
+     if(inRadius = true)[
+      ask players with [color = teamColor and state = "jail"][
+       set state "freed" 
+      ] 
+     ]
+  
+end
+
+to check-should-defend-capturer[player] ;;below sets teammates to help flag-capturer
+  
+  let blueInradius false
+  
+    ask player with [color = blue and hasFlag = false][ 
+      ask player with [color = blue and hasFlag = true] in-radius 2[
+       set blueInradius true
+      ]
+      if(blueInradius = true)[  set state "defendcapturer" ]
+    ]
+  
+end
+
+
+to check-retrieve-flag[player] ;;below checks if enemy has flag, if so set players to retrieve it
+  
+    let blueHaveFlag false
+    let redHaveFlag false
+    
+     ask player with[color = red and hasFlag = false ][
+       if(any? players with [color = blue and hasFlag = true])[
+        set blueHaveFlag true
+      ] 
+     if(blueHaveFlag = true) [ set state "lostflag"]
+    ]
+     
+    ask player with[color = blue and hasFlag = false][
+       if(any? players with [color = red and hasFlag = true])[
+        set redHaveFlag true
+      ] 
+     if(redHaveFlag = true) [ set state "lostflag"]
+    ]
+
+      
+end
+
+to check-if-defendflag[player] ;;checks if teammates should defend any nearby enemies close to their flag
+  
+    let flag 0
+    
+   ask player with [color = teamColor and hasFlag = false] [ 
+     let inRadius false
+
+     ask player with [color = teamColor and hasFlag = true] in-radius 1[
+        if(any? players with [color = teamColor] in-radius 1)[
+          set inRadius true
+        ]
+     ]
+     if(inRadius = true)[ set state "defendflag" ]
+   ]
+  
+end
+
+
+to check-if-rescue[player]
+
+    let counter 0
+    let boolRescueNeeded false
+    
+    ask player with [state = "jail"][
+       set counter counter + 1
+       
+       ifelse(counter >= player-count / 2)[
+         set boolRescueNeeded true
+       ][set boolRescueNeeded false ]
+    ]
+    
+    if(boolRescueNeeded = true)
+    [
+     ask player with [state != "jail"][
+       set state "rescue" 
+     ] 
+    ]
+  
+end

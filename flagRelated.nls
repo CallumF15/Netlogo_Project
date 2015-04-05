@@ -4,6 +4,9 @@ globals[
   redFlagID
   blueFlagID
   
+  redRespawnFlag
+  blueRespawnFlag
+  
   redFlagSpawnPositionX ;;default spawn location of red flag X position
   redFlagSpawnPositionY ;;default spawn location of red flag Y position
   blueFlagSpawnPositionX ;;default spawn location of blue flag X position
@@ -11,6 +14,7 @@ globals[
 ]
 
 to flag-pickup[player] ;;parsely working
+  
   let FlagPosX 0
   let FlagPosY 0
   let defaultFlag 0
@@ -38,10 +42,10 @@ if(teamColor = blue)[
        set blueBool true
    ]
     
-    if(blueBool = true)[
+    ifelse(blueBool = true)[
        set blueFlagID id
        set hasFlag true
-    ]
+    ][ set hasFlag false ]
    ]
    
     if(blueBool = true and blueFlagID = id)[
@@ -62,10 +66,10 @@ if(teamColor = blue)[
        set redBool true
    ]
     
-    if(redBool = true)[
+    ifelse(redBool = true)[
        set redFlagID id
        set hasFlag true
-    ]
+    ][ set hasFlag false ]
    ]
       
     if(redBool = true and redFlagID = id)[
@@ -141,10 +145,12 @@ to capture-flag
    if(state = "capture" and redHasFlag = false)[
      ;;moves player to their flag 
      set path get-path patch-here first [ patch-here ] of flagBLUE
+     set-defend blue
    ]
    
    if(state = "capture" and redHasFlag = true)[
      set path get-path patch-here first [ patch-here ] of flagBLUE
+     set-defend blue
     ;;other attacker goes for flag? 
    ]
  ]
@@ -160,25 +166,51 @@ to capture-flag
    if(state = "capture" and blueHasFlag = false)[
      ;;moves player to their flag 
      set path get-path patch-here first [ patch-here ] of flagRED
+     set-defend red
+
    ]
    
     if(state = "capture" and blueHasFlag = true)[
       set path get-path patch-here first [ patch-here ] of flagRED
+      set-defend red
     ;;other attacker goes for flag? 
    ]
  ]
   
 end
 
+to set-defend[colors]
+  
+     ask players with [color = colors and hasFlag = true][ 
+      ask players with [ color = colors and hasFlag = false] in-radius 3[
+        set state "defendcapturer"
+      ]
+    ]
+  
+end
 
-to retrieve-flag ;;locate flag (I have it as they already know), touch it, resets back to default position?
+
+to retrieve-flag [player] ;;locate flag (I have it as they already know), touch it, resets back to default position?
   
-  ask players with [color = blue and hasFlag = false][ ;;players that don't have flag retrieve
-    set path get-path patch-here first [ patch-here ] of players with [color = red and hasFlag = true]
+  set redRespawnFlag false
+  set blueRespawnFlag false
+  
+  if(color = blue and hasFlag = false)[
+      set path get-path patch-here first [ patch-here ] of flagBLUE
+
+    ask flagBLUE in-radius 1[
+       set blueRespawnFlag true
+    ]
+    
+    ask players with [color = red] in-radius .2 [ set state "jail" ]
   ] 
   
-   ask players with [color = red and hasFlag = false][ ;;players that don't have flag retrieve
-    set path get-path patch-here first [ patch-here ] of players with [color = blue and hasFlag = true]
+  if(color = red and hasFlag = false)[
+      set path get-path patch-here first [ patch-here ] of flagRED
+
+    ask flagRED in-radius 1[
+       set redRespawnFlag true
+    ]
   ] 
-  
+
 end

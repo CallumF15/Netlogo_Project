@@ -45,7 +45,7 @@ patches-own [
   default-color
 ]
 
-__includes [ "navmesh.nls" "pathfinding.nls" "navigation.nls" "navigation demo.nls" "flagRelated.nls" "scoreRelated.nls" "stateRelated.nls" ]
+__includes [ "navmesh.nls" "pathfinding.nls" "navigation.nls" "navigation demo.nls" "flagRelated.nls" "scoreRelated.nls" "stateRelated.nls" "setStateRelated.nls" ]
 
 ;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Setup Procedures ;;;
@@ -74,6 +74,7 @@ to setup
   ] [
     set redBool false
     set blueBool false
+    ask players [ set hasFlag false ]
     setup-flags
     setup-players
     create-jails
@@ -185,21 +186,16 @@ to go
     follow-path
     draw-path
   ]
-
+ 
   check-state-Changed
-
+  ask players [ if(timer > .1 and stateChanged = false)[ set stateChanged true  reset-timer] ]
+    
   check-state Players with [color = blue]
   check-state Players with [color = red]
   set-state Players with [color = blue]
   set-state Players with [color = red]
 
-
-
   tick
-end
-
-to get-turtle-position
-
 end
 
 to set-startGame-state ;;done
@@ -215,8 +211,6 @@ to set-startGame-state ;;done
 
     ifelse(redCounter > half)[
         set state "attackflag"
-        set path get-path patch-here first [ patch-here ] of flagBLUE
-        ;;draw-path
     ][ set state "wait" ]
   ]
 
@@ -225,8 +219,6 @@ to set-startGame-state ;;done
     set blueCounter blueCounter + 1
     ifelse(blueCounter > half)[
         set state "attackflag"
-        set path get-path patch-here first [ patch-here ] of flagRED
-        ;;draw-path
     ][ set state "wait" ]
   ]
 
@@ -235,7 +227,6 @@ end
 to check-state-changed ;;checks to see if the current player state has changed
 
   ask players[
-   ;; output-show(word "before State " previousState)
 
     if(state = previousState)[
       set stateChanged false
@@ -244,16 +235,15 @@ to check-state-changed ;;checks to see if the current player state has changed
     if(previousState != state)[
       set stateChanged true
       set previousState state ;;if state hasn't changed, why assign it to previousState?
-      ;;output-show(word "stateChanged " stateChanged)
+      output-show(word "stateChanged " stateChanged)
     ]
-    ;;output-show(word "after State " previousState)
   ]
 
 end
 
-to revert-state [player];;sets state back to last state
+to revert-state [player states];;sets state back to last state
 
-ask player[
+ask player with [state = states][
   if(state != previousState)[ ;;make sure its not the same
     set state previousState
   ]
@@ -261,85 +251,25 @@ ask player[
 
 end
 
-to set-state[player]
-    ;;below checks if enemies are in radius of player
-    ;;sets player to jail if enemy is too close
-
-    ifelse(any? player with [color = red])[
+to set-state[player] 
+  
+    ifelse(any? player with [color = red])[ ;;assigns teamColor/opponentColor
        set opponentColor blue
        set teamColor red
     ][ set opponentColor red
        set teamColor blue ]
+    
 
-    ask player[
-      if(state != "jail")[
-        if(any? players with [color = opponentColor] in-radius .01)[ ;;if enemies in radius of player, player will evade else continues to run
-        set state "evade"
-      ]
-
-       if(any? players with [color = opponentColor and state != "jail"] in-radius .01)[ ;;if enemy hits player, go to jail
-          set in-prisoned players
-          set state "jail"
-       ]
-      ]
-    ]
-
-    ;;below sets state to free if teammate is closeby
-
-     ask prisons with [color = teamColor][
-        ask player with[color = teamColor] in-radius .2;;if teammate near prison, player in prison is free
-       [
-        set state "freed"
-       ]
-      ]
-
+    check-jail-evade player ;;below checks if enemy is touching player, set player to jail & if are near, player will evade
+    check-can-free-teammate player ;;below checks if team-mate is in-radius of prison to free team-mates
+    
     flag-pickup player ;;checks to see if any players picked up flag
-
-    ;;below checks if any players have flag
-
-    ask player with [hasFlag = true][ ;;somethings up with this
-      if(any? players with [color = opponentColor and hasFlag = false])[
-        set state "defendcapturer"
-      ]
-    ]
-
-
-    let flag 0
-   ask player with [color = teamColor and hasFlag = false and previousState != "attackflag"] [ ;;checks if players in-radius of flag
-     let blah false
-     if(teamColor = blue)[ set flag flagBLUE ]
-     if(teamColor = red) [ set flag flagRED  ]
-
-     ask flag in-radius 1[
-        if(any? players with [color = opponentColor] in-radius 1)[
-          set blah true
-        ]
-     ]
-
-     if(blah = true)[ set state "defendflag" ]
-   ]
-
-
-    flag-captured
-    
-    let counter 0
-    let boolRescueNeeded false
-    
-    ask player with [state = "jail"][
-       set counter counter + 1
-       
-       ifelse(counter >= player-count / 2)[
-         set boolRescueNeeded true
-       ][set boolRescueNeeded false ]
-    ]
-    
-    if(boolRescueNeeded = true)
-    [
-     ask player with [state != "jail"][
-       set state "rescue" 
-     ] 
-    ]
-    
+    check-should-defend-capturer player ;;below sets teammates to help flag-capturer
+    check-retrieve-flag player ;;below checks if enemy has flag, if so set players to retrieve it
+    check-if-defendflag player ;;checks if teammates in-radius of flag-holder to determine if they should defned
+    flag-captured 
+    check-if-rescue player
+   
 end
 
 
@@ -348,32 +278,23 @@ end
 to check-state[player]
 
  ask player[
-
- if(stateChanged = true)[
+   
+if(stateChanged = true)[
  output-show (state)
   ;;default states
-
-  if(state = "attackflag")[ ;;done
-    if(teamColor = red)[
-      set path get-path patch-here first [ patch-here ] of flagRED
+  
+  if(state = "attackflag")[ 
+    if(color = red)[
+      set path get-path patch-here first [ patch-here ] of flagBLUE
     ]
 
-    if(teamColor = blue)[
+    if(color = blue)[
        set path get-path patch-here first [ patch-here ] of flagRED
     ]
   ]
 
   if (state = "defendflag")[
-    if(teamColor = red)[
-
-         set path get-path patch-here first [ patch-here ] of players
-    ]
-
-    if(teamColor = blue)[
-       if(any? players with [color = red] in-radius 1)[
-         set path get-path patch-here first [ patch-here ] of players
-      ]
-    ]
+       defend-flag
   ]
 
   ;;end default states
@@ -382,6 +303,7 @@ to check-state[player]
     if(teamColor = red)[
       capture-flag
     ]
+    
     if(teamColor = blue)[
       capture-flag
     ]
@@ -394,18 +316,18 @@ to check-state[player]
 
   if (state = "lostflag") [
     ;;team on alert trying to locate flag taker (soon as it's took, some move back to flag default location to find taker)
+    retrieve-flag player
   ]
 
   if (state = "evade") [
     ;;move in direction the chaser is facing and move?
-    move-evade ;; needs changed
+    move-evade player;; needs changed
   ]
   
   if (state = "rescue") [
     ;;save teamate from jail (be aimed at defenders or whoever is near the cell)
-    if(teamColor = red) [ set path get-path patch-here first [ patch-here ] of prisons with [color = blue ]]
-    if(teamColor = blue) [ set path get-path patch-here first [ patch-here ] of prisons with [color = red ]]
-
+    if(color = red) [ set path get-path patch-here first [ patch-here ] of prisons with [color = blue ]]
+    if(color = blue) [ set path get-path patch-here first [ patch-here ] of prisons with [color = red ]]
     release-player
   ]
   
@@ -420,6 +342,10 @@ to check-state[player]
   ]
  ]
  ]
+ 
+ if(blueRespawnFlag = true)[ respawn-blue-flags ]
+ if(redRespawnFlag = true)[ respawn-red-flags ]
+ 
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
@@ -492,7 +418,7 @@ player-count
 player-count
 2
 8
-8
+6
 2
 1
 NIL
@@ -626,7 +552,7 @@ player-speed
 player-speed
 0
 1
-0.318
+0.58
 0.001
 1
 NIL
@@ -669,7 +595,7 @@ tree-count
 tree-count
 0
 256
-163
+91
 1
 1
 NIL
