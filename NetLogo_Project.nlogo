@@ -19,7 +19,7 @@ globals [
   winning-score    ;; Score required to win
   blue-prison      ;; blue prison occupancy
   red-prison       ;; red prison occupancy
-  losing-score     ;; score required to lose
+  players-prison    ;; score required to lose
   idValue
   opponentColor
   teamColor
@@ -188,7 +188,7 @@ to go
   ]
  
   check-state-Changed
-  ask players [ if(timer > .1 and stateChanged = false)[ set stateChanged true  reset-timer] ]
+  ask players [ if(timer > .2 and stateChanged = false)[ set stateChanged true  reset-timer] ]
     
   check-state Players with [color = blue]
   check-state Players with [color = red]
@@ -604,33 +604,33 @@ HORIZONTAL
 @#$#@#$#@
 ## WHAT IS IT?
 
-Capture the Flag game in which both teams have to capture the flag and return it too their own base.
+Capture the Flag game in which both teams have to capture the flag and return it too their own base. The players also have to capture other players and send them to jail when they are defending their flags. The game ends when one player has captured their flag or when all the other players are thrown in jail.
 
 ## HOW IT WORKS
 
-Both turtles are assigned to teams and have different states depending on which actions they can take.
+Both turtles are assigned to teams and have different states depending on which actions they can take. They are pre-assigned states at the start of the game and they act on one half attacks the fag and the other half defends the flag. The states randomly change as the game progresses.
 
-The forest layout is generated at the start of a game along with a navigation mesh for pathfinding.
+The forest layout is generated at the start of a game along with a navigation mesh for pathfinding. As the game is re-setup the layout is randomly generated each time giving different obstacles for the AI to navigate through as they try to capture the flag and avoid enemy AI.
 
 ## HOW TO USE IT
 
-Pressing setup creates the game, go plays the game, player count sets up the number of players in the game.
+Pressing setup creates the game, go plays the game, player count sets up the number of players in the game. The player can also set up the number of trees in the game so you can have more obstacles for the players to navigate through or less obstacles making the terrain easier to navigate through. You can adjust the speed of the the players so you can see the state changes in the game.
 
 ## THINGS TO NOTICE
 
-Notice the path that the player takes, the state that the players are in, the level being generated.
+Notice the random level generation as the players are randomly spawned next to the flag. The jails are randomly spawned in the same half of the map as the players are in and there is a river in the map that seperates the AI from each color depending on which team that each of them are in.
 
 ## THINGS TO TRY
 
-Change the number of players, change the sped of the players, change the number of trees, set up an navigation demo and then selecting a goal for the player to travel to.
+Change the number of players, change the speed of the players, change the number of trees, set up an navigation demo and then selecting a goal for the player to travel to. By doing all of this you can see the game functioning to its fullest capacities.
 
 ## EXTENDING THE MODEL
 
-(Suggested things to add or change in the Code tab to make the model more complicated, detailed, accurate, etc.)
+If you can navigate through the code then you are doing well enough said.
 
 ## NETLOGO FEATURES
 
-Pathfinding for players, the changing of many states and random between two numbers.
+Pathfinding for players, the changing of many states and random between two numbers. The navigation of the AI throught the obstacles is one of the main features. Also random level generation is another feature. The changing of the player states as the game progresses is another important feature of our game.
 
 ## RELATED MODELS
 

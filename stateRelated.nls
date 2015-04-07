@@ -3,7 +3,7 @@
 
    set red-prison 0
    set blue-prison 0
-   set losing-score 4
+   set players-prison 4
 
  end
 
@@ -173,7 +173,7 @@ end
 
 to check-defeat
 
-  if red-prison = losing-score [blue-victory]
-  if blue-prison = losing-score [red-victory]
+  if red-prison = players-prison [blue-victory]
+  if blue-prison = players-prison [red-victory]
 
 end

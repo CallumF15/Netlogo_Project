@@ -212,5 +212,7 @@ to retrieve-flag [player] ;;locate flag (I have it as they already know), touch 
        set redRespawnFlag true
     ]
   ] 
+  
+  
 
 end
