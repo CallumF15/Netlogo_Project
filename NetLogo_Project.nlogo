@@ -188,11 +188,8 @@ to go
   ]
  
   check-state-Changed
-<<<<<<< HEAD
   ;;ask players [ if(timer > .2 and stateChanged = false)[ set stateChanged true  reset-timer] ]
-=======
   ask players [ if(timer > .2 and stateChanged = false)[ set stateChanged true  reset-timer] ]
->>>>>>> origin/master
     
   check-state Players with [color = blue]
   check-state Players with [color = red]
@@ -214,12 +211,8 @@ to set-startGame-state ;;done
     set redCounter redCounter + 1
 
     ifelse(redCounter > half)[
-        set state "attackflag"
-<<<<<<< HEAD
-    ][ set state "defendflag" ]
-=======
+       set state "attackflag"
     ][ set state "wait" ]
->>>>>>> origin/master
   ]
 
   ask players with [color = blue]
@@ -227,12 +220,9 @@ to set-startGame-state ;;done
     set blueCounter blueCounter + 1
     ifelse(blueCounter > half)[
         set state "attackflag"
-<<<<<<< HEAD
-    ][ set state "defendflag" ]
-=======
     ][ set state "wait" ]
->>>>>>> origin/master
   ]
+  
 
 end
 
@@ -274,19 +264,17 @@ to set-state[player]
 
     check-jail-evade player ;;below checks if enemy is touching player, set player to jail & if are near, player will evade
     check-can-free-teammate player ;;below checks if team-mate is in-radius of prison to free team-mates
-<<<<<<< HEAD
     flag-pickup player ;;checks to see if any players picked up flag
     check-if-defendflag player ;;checks if teammates in-radius of flag-holder to determine if they should defned
     check-if-attack player
      check-should-defend-capturer player ;;below sets teammates to help flag-capturer
     check-retrieve-flag player ;;below checks if enemy has flag, if so set players to retrieve it
-=======
+
     
     flag-pickup player ;;checks to see if any players picked up flag
     check-should-defend-capturer player ;;below sets teammates to help flag-capturer
     check-retrieve-flag player ;;below checks if enemy has flag, if so set players to retrieve it
     check-if-defendflag player ;;checks if teammates in-radius of flag-holder to determine if they should defned
->>>>>>> origin/master
     flag-captured 
     check-if-rescue player
    
@@ -333,29 +321,18 @@ if(stateChanged = true)[
     defend-capturer
   ]
 
-<<<<<<< HEAD
-  if (state = "lostflag") [    ;;team on alert trying to locate flag taker (soon as it's took, some move back to flag default location to find taker)
-=======
   if (state = "lostflag") [
     ;;team on alert trying to locate flag taker (soon as it's took, some move back to flag default location to find taker)
->>>>>>> origin/master
     retrieve-flag player
   ]
 
   if (state = "evade") [
-<<<<<<< HEAD
     move-evade player
   ]
   
-  if (state = "rescue") [     ;;save teamate from jail (be aimed at defenders or whoever is near the cell)
-=======
-    ;;move in direction the chaser is facing and move?
-    move-evade player;; needs changed
-  ]
   
   if (state = "rescue") [
     ;;save teamate from jail (be aimed at defenders or whoever is near the cell)
->>>>>>> origin/master
     if(color = red) [ set path get-path patch-here first [ patch-here ] of prisons with [color = blue ]]
     if(color = blue) [ set path get-path patch-here first [ patch-here ] of prisons with [color = red ]]
     release-player
@@ -713,7 +690,6 @@ Members-
  * Mathew McGerty
  * Chinglong Law
  * Callum Flannagan
-
 
 
 @#$#@#$#@
