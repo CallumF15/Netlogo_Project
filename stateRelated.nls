@@ -40,27 +40,21 @@ end
 to release-player
 
 let blueNear false
-  let redNear false
+let redNear false
   
-  ask players with [color = blue and state = "jail"][
-    ifelse(any? players with [color = blue and state != "jail"] in-radius .2)[
+  if(color = blue)[
+    ask players with [color = blue and state = "jail"] in-radius .5[
       set blueNear true
-    ][set blueNear false ]
+      set state "freed"
+    ]
   ]
   
-  ask players with [color = red and state = "jail"][
-    ifelse(any? players with [color = red and state != "jail"] in-radius .2)[
+  if(color = red)[
+    ask players with [color = red and state = "jail"] in-radius .5[
       set redNear true
-    ][set redNear false ]
+      set state "freed"
+    ]
   ]
-
-if(blueNear = true)[
-  free-player blue
-]
-
-if(redNear = true)[
- free-player red
-]
 
 end
 
@@ -73,37 +67,53 @@ to free-player [colors]
   let PrisonX 0
   let PrisonY 0
    
-  ask players with [ color = colors and state = "jail"][
    ask prisons with [color = opp ][
       set PrisonX xcor
       set PrisonY ycor
     ]
-
-  
     if(colors = blue) [  set blue-prison blue-prison - 1   set xcor PrisonX + 1 set ycor PrisonY]
-    if(colors = red) [  set red-prison red-prison - 1 set xcor PrisonX - 1 set ycor PrisonY] 
-  
-  ]
-    
+    if(colors = red) [  set red-prison red-prison - 1 set xcor PrisonX - 1 set ycor PrisonY]  
 end
 
-to move-evade ;;sets player position to somewhere to escape enemy
+to move-evade[player] ;;sets player position to somewhere to escape enemy
   
-  let blueX 0
-  let blueY 0
-  
-  ask players with [color = red and state = "evade"][
-    ;;randomly choose a path in opposite direction of enemy
+  if(color = red)[ 
+      let redFlagRadius false
     
-    ask players with [color = blue] in-radius .2[ ;;get enemy in-radius of player ;;get position
-      set blueX xcor
-      set blueY ycor
-    ]
-    
-    ;;set random coordinates here
-    ;;apply to pathfinding
+      ifelse(any? flagRED in-radius 1)[ ;;if near their flag, don't evade?
+          set redFlagRadius true
+      ][  set redFlagRadius false ]
+      
+      
+      set path get-path patch-here first [ patch-here ] of flagRED
+      
+      let redRadius false
+      
+      ifelse(any? players with [color = red] in-radius 1)[
+         set redRadius true
+      ][ set redRadius false]
+      
+      if(redRadius = true and redFlagRadius = false) [ set path get-path patch-here first [ patch-here ] of flagBLUE]
   ]
   
+  if(color = blue)[
+      let blueFlagRadius false
+      
+      ifelse(any? flagBLUE in-radius 1)[ ;;if near their flag, don't evade?
+          set blueFlagRadius true
+      ][  set blueFlagRadius false ]
+    
+      set path get-path patch-here first [ patch-here ] of flagBLUE
+      
+      let blueRadius false
+      
+      ifelse(any? players with [color = blue] in-radius 1)[
+         set blueRadius true
+      ][ set blueRadius false]
+      
+      if(blueRadius = false and blueFlagRadius = false) [ set path get-path patch-here first [ patch-here ] of flagRED]
+  ]
+
 end
 
 to defend-capturer
@@ -114,16 +124,31 @@ to defend-capturer
   let bluePosY 0
 
 if(color = red)[
-  ;;let targetblah one-of players with [ color = red and hasFlag = true ]
- ;; if targetblah != nobody [ set path get-path patch-here first [ patch-here ] of targetblah]
+
+ let enemyInradius false
+ let enemyToTarget 0
  
   set path get-path patch-here first [ patch-here ] of players with [color = red and hasFlag = true]
+  
+  ask players with [color = blue] in-radius 1[
+    set enemyToTarget players
+    set enemyInradius true
+  ]
+  if(enemyInradius = true)[  set path get-path patch-here first [ patch-here ] of enemyToTarget ]
 ]
 
 if(color = blue)[
    
-  ;;let targetblah one-of players with [ color = blue and hasFlag = true ]
-  set path get-path patch-here first [ patch-here ] of players with [color = blue and hasFlag = true]
+   let enemyInradius2 false
+   let enemyTotarget2 false
+   
+   set path get-path patch-here first [ patch-here ] of players with [color = blue and hasFlag = true]
+   
+  ask players with [color = red] in-radius 1[
+    set enemyToTarget2 players
+    set enemyInradius2 true
+  ]
+  if(enemyInradius2 = true)[  set path get-path patch-here first [ patch-here ] of enemyToTarget2 ]
 ]
   
 
@@ -131,10 +156,27 @@ end
 
 to defend-flag
   
-  set path get-path patch-here first [ patch-here ] of flagBLUE
+  let redsTarget 0
+  let blueTargets 0
+  let blueHasTarget false
+  let redHasTarget false
   
-  ;;set to patrol radius around flag
+  if(color = red)[
+    ask players with [color = blue] in-radius 1[
+      set redsTarget players
+      set redHasTarget true
+    ] 
+    if(redHasTarget = true)[ set path get-path patch-here first [ patch-here ] of redsTarget ]
+  ]
   
+  if(color = blue)[
+    ask players with [color = red] in-radius 1[
+      set blueTargets players
+      set blueHasTarget true
+    ] 
+   if(blueHasTarget = true)[ set path get-path patch-here first [ patch-here ] of blueTargets ]
+  ]
+ 
 end
 
 to check-defeat

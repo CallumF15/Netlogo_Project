@@ -4,13 +4,19 @@ globals[
   redFlagID
   blueFlagID
   
+  redRespawnFlag
+  blueRespawnFlag
+  
   redFlagSpawnPositionX ;;default spawn location of red flag X position
   redFlagSpawnPositionY ;;default spawn location of red flag Y position
   blueFlagSpawnPositionX ;;default spawn location of blue flag X position
   blueFlagSpawnPositionY ;;default spawn location of blue flag Y position
+  redCaptured
+  blueCaptured
 ]
 
 to flag-pickup[player] ;;parsely working
+  
   let FlagPosX 0
   let FlagPosY 0
   let defaultFlag 0
@@ -38,13 +44,13 @@ if(teamColor = blue)[
        set blueBool true
    ]
     
-    if(blueBool = true)[
+    ifelse(blueBool = true)[
        set blueFlagID id
        set hasFlag true
-    ]
+    ][ set hasFlag false ]
    ]
    
-    if(blueBool = true and blueFlagID = id)[
+    if(blueBool = true and blueFlagID = id and hasFlag = true)[
         let PlayerPosX xcor
         let PlayerPosY ycor 
         set state "capture"
@@ -62,13 +68,13 @@ if(teamColor = blue)[
        set redBool true
    ]
     
-    if(redBool = true)[
+    ifelse(redBool = true)[
        set redFlagID id
        set hasFlag true
-    ]
+    ][ set hasFlag false ]
    ]
       
-    if(redBool = true and redFlagID = id)[
+    if(redBool = true and redFlagID = id and hasFlag = true)[
         let PlayerPosX xcor
         let PlayerPosY ycor 
         set state "capture"
@@ -82,22 +88,21 @@ if(teamColor = blue)[
 end
 
 to respawn-blue-flags
-  
-  set blue-score blue-score + 1
+  if(blueCaptured = true)[  set blue-score blue-score + 1 ]
   ask flagBLUE [ die ]
   create-flagBLUE 1 [ set color blue setxy blueFlagSpawnPositionX blueFlagSpawnPositionY set shape "flag"]
 end
 
 to respawn-red-flags
-  set red-score red-score + 1
+    if(redCaptured = true)[  set red-score red-score + 1 ]
   ask flagRED [die]
   create-flagRED 1 [ set color red setxy redFlagSpawnPositionX redFlagSpawnPositionY set shape "flag"]
 end
 
 to flag-captured
   
-    let redDefaultSpawn true
-    let blueDefaultSpawn true
+    let redDefaultSpawn false
+    let blueDefaultSpawn false
     let redIn-radius false
     let blueIn-radius false
         
@@ -113,16 +118,16 @@ to flag-captured
       
      ask flagBLUE[
        ifelse(xcor = blueFlagSpawnPositionX and ycor = blueFlagSpawnPositionY)[
-        set blueDefaultSpawn true
-       ][ set blueDefaultSpawn false ]
+           set blueDefaultSpawn false
+       ][  set blueDefaultSpawn true]
        
         ask flagRED in-radius 1[
           set redIn-radius true
       ]
      ]
      
-     if(blueDefaultSpawn = true and redIn-radius = true) [ respawn-blue-flags ]
-     if(redDefaultSpawn = true and blueIn-radius = true) [ respawn-red-flags ]
+     ifelse(blueDefaultSpawn = true and redIn-radius = true) [ respawn-blue-flags set blueCaptured true] [ set blueCaptured false ]
+     ifelse(redDefaultSpawn = true and blueIn-radius = true) [ respawn-red-flags set redCaptured true] [ set redCaptured false ]
 end
 
 
@@ -141,10 +146,12 @@ to capture-flag
    if(state = "capture" and redHasFlag = false)[
      ;;moves player to their flag 
      set path get-path patch-here first [ patch-here ] of flagBLUE
+     set-defend blue
    ]
    
    if(state = "capture" and redHasFlag = true)[
      set path get-path patch-here first [ patch-here ] of flagBLUE
+     set-defend blue
     ;;other attacker goes for flag? 
    ]
  ]
@@ -160,25 +167,57 @@ to capture-flag
    if(state = "capture" and blueHasFlag = false)[
      ;;moves player to their flag 
      set path get-path patch-here first [ patch-here ] of flagRED
+     set-defend red
+
    ]
    
     if(state = "capture" and blueHasFlag = true)[
       set path get-path patch-here first [ patch-here ] of flagRED
+      set-defend red
     ;;other attacker goes for flag? 
    ]
  ]
   
 end
 
+to set-defend[colors]
+  
+     ask players with [color = colors and hasFlag = true][ 
+      ask players with [ color = colors and hasFlag = false] in-radius 3[
+        set state "defendcapturer"
+      ]
+    ]
+  
+end
 
-to retrieve-flag ;;locate flag (I have it as they already know), touch it, resets back to default position?
+
+to retrieve-flag [player] ;;locate flag (I have it as they already know), touch it, resets back to default position?
   
-  ask players with [color = blue and hasFlag = false][ ;;players that don't have flag retrieve
-    set path get-path patch-here first [ patch-here ] of players with [color = red and hasFlag = true]
+  set redRespawnFlag false
+  set blueRespawnFlag false
+  
+  if(color = blue and hasFlag = false)[
+      set path get-path patch-here first [ patch-here ] of flagBLUE
+
+    ask flagBLUE in-radius 1[
+       ifelse(xcor = blueFlagSpawnPositionX and ycor = blueFlagSpawnPositionY)[
+           set blueRespawnFlag false
+       ][  set blueRespawnFlag true ]
+       
+       set blueRespawnFlag true
+    ]
+    
+    ask players with [color = red] in-radius .2 [ set state "jail" ]
   ] 
   
-   ask players with [color = red and hasFlag = false][ ;;players that don't have flag retrieve
-    set path get-path patch-here first [ patch-here ] of players with [color = blue and hasFlag = true]
+  if(color = red and hasFlag = false)[
+      set path get-path patch-here first [ patch-here ] of flagRED
+
+    ask flagRED in-radius 1[
+     ifelse(xcor = blueFlagSpawnPositionX and ycor = blueFlagSpawnPositionY)[
+           set redRespawnFlag false
+       ][  set redRespawnFlag true ]
+    ]
   ] 
-  
+
 end
