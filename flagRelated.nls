@@ -192,6 +192,7 @@ end
 
 
 to retrieve-flag [player] ;;locate flag (I have it as they already know), touch it, resets back to default position?
+<<<<<<< HEAD
   
   set redRespawnFlag false
   set blueRespawnFlag false
@@ -219,5 +220,30 @@ to retrieve-flag [player] ;;locate flag (I have it as they already know), touch 
        ][  set redRespawnFlag true ]
     ]
   ] 
+=======
+  
+  set redRespawnFlag false
+  set blueRespawnFlag false
+  
+  if(color = blue and hasFlag = false)[
+      set path get-path patch-here first [ patch-here ] of flagBLUE
+
+    ask flagBLUE in-radius 1[
+       set blueRespawnFlag true
+    ]
+    
+    ask players with [color = red] in-radius .2 [ set state "jail" ]
+  ] 
+  
+  if(color = red and hasFlag = false)[
+      set path get-path patch-here first [ patch-here ] of flagRED
+
+    ask flagRED in-radius 1[
+       set redRespawnFlag true
+    ]
+  ] 
+  
+  
+>>>>>>> origin/master
 
 end

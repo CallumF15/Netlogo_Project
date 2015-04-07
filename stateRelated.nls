@@ -3,7 +3,7 @@
 
    set red-prison 0
    set blue-prison 0
-   set losing-score 4
+   set players-prison 4
 
  end
 
@@ -43,14 +43,22 @@ let blueNear false
 let redNear false
   
   if(color = blue)[
+<<<<<<< HEAD
     ask players with [color = blue and state = "jail"] in-radius .5[
+=======
+    ask players with [color = blue and state = "jail"] in-radius 1[
+>>>>>>> origin/master
       set blueNear true
       set state "freed"
     ]
   ]
   
   if(color = red)[
+<<<<<<< HEAD
     ask players with [color = red and state = "jail"] in-radius .5[
+=======
+    ask players with [color = red and state = "jail"] in-radius 1[
+>>>>>>> origin/master
       set redNear true
       set state "freed"
     ]
@@ -181,7 +189,7 @@ end
 
 to check-defeat
 
-  if red-prison = losing-score [blue-victory]
-  if blue-prison = losing-score [red-victory]
+  if red-prison = players-prison [blue-victory]
+  if blue-prison = players-prison [red-victory]
 
 end

@@ -27,7 +27,11 @@ to check-can-free-teammate[player]  ;;below checks if team-mate is in-radius of 
   
     let inRadius false
     
+<<<<<<< HEAD
      ask prisons with [color = opponentColor][
+=======
+     ask prisons with [color = teamColor][
+>>>>>>> origin/master
         ask player with[color = teamColor and state != "jail"] in-radius 1;if teammate near prison, player in prison is free
        [
         set inRadius true
@@ -62,16 +66,28 @@ to check-retrieve-flag[player] ;;below checks if enemy has flag, if so set playe
     let redHaveFlag false
     
      ask player with[color = red and hasFlag = false ][
+<<<<<<< HEAD
        ifelse(any? players with [color = blue and hasFlag = true])[
         set blueHaveFlag true
       ][ set blueHaveFlag false ]
+=======
+       if(any? players with [color = blue and hasFlag = true])[
+        set blueHaveFlag true
+      ] 
+>>>>>>> origin/master
      if(blueHaveFlag = true) [ set state "lostflag"]
     ]
      
     ask player with[color = blue and hasFlag = false][
+<<<<<<< HEAD
        ifelse(any? players with [color = red and hasFlag = true])[
         set redHaveFlag true
       ] [ set redHaveFlag false ]
+=======
+       if(any? players with [color = red and hasFlag = true])[
+        set redHaveFlag true
+      ] 
+>>>>>>> origin/master
      if(redHaveFlag = true) [ set state "lostflag"]
     ]
 
@@ -116,6 +132,7 @@ to check-if-rescue[player]
      ] 
     ]
   
+<<<<<<< HEAD
 end
 
 to check-if-attack[player]
@@ -142,4 +159,6 @@ to check-if-attack[player]
  ]
  
   
+=======
+>>>>>>> origin/master
 end
