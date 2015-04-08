@@ -186,11 +186,11 @@ to go
     follow-path
     draw-path
   ]
- 
+
   check-state-Changed
   ;;ask players [ if(timer > .2 and stateChanged = false)[ set stateChanged true  reset-timer] ]
   ask players [ if(timer > .2 and stateChanged = false)[ set stateChanged true  reset-timer] ]
-    
+
   check-state Players with [color = blue]
   check-state Players with [color = red]
   set-state Players with [color = blue]
@@ -222,7 +222,7 @@ to set-startGame-state ;;done
         set state "attackflag"
     ][ set state "wait" ]
   ]
-  
+
 
 end
 
@@ -253,14 +253,14 @@ ask player with [state = states][
 
 end
 
-to set-state[player] 
-  
+to set-state[player]
+
     ifelse(any? player with [color = red])[ ;;assigns teamColor/opponentColor
        set opponentColor blue
        set teamColor red
     ][ set opponentColor red
        set teamColor blue ]
-    
+
 
     check-jail-evade player ;;below checks if enemy is touching player, set player to jail & if are near, player will evade
     check-can-free-teammate player ;;below checks if team-mate is in-radius of prison to free team-mates
@@ -270,14 +270,14 @@ to set-state[player]
      check-should-defend-capturer player ;;below sets teammates to help flag-capturer
     check-retrieve-flag player ;;below checks if enemy has flag, if so set players to retrieve it
 
-    
+
     flag-pickup player ;;checks to see if any players picked up flag
     check-should-defend-capturer player ;;below sets teammates to help flag-capturer
     check-retrieve-flag player ;;below checks if enemy has flag, if so set players to retrieve it
     check-if-defendflag player ;;checks if teammates in-radius of flag-holder to determine if they should defned
-    flag-captured 
+    flag-captured
     check-if-rescue player
-   
+
 end
 
 
@@ -286,12 +286,12 @@ end
 to check-state[player]
 
  ask player[
-   
+
 if(stateChanged = true)[
  output-show (state)
   ;;default states
-  
-  if(state = "attackflag")[ 
+
+  if(state = "attackflag")[
     if(color = red)[
       set path get-path patch-here first [ patch-here ] of flagBLUE
     ]
@@ -311,7 +311,7 @@ if(stateChanged = true)[
     if(teamColor = red)[
       capture-flag
     ]
-    
+
     if(teamColor = blue)[
       capture-flag
     ]
@@ -329,15 +329,15 @@ if(stateChanged = true)[
   if (state = "evade") [
     move-evade player
   ]
-  
-  
+
+
   if (state = "rescue") [
     ;;save teamate from jail (be aimed at defenders or whoever is near the cell)
     if(color = red) [ set path get-path patch-here first [ patch-here ] of prisons with [color = blue ]]
     if(color = blue) [ set path get-path patch-here first [ patch-here ] of prisons with [color = red ]]
     release-player
   ]
-  
+
   if(state = "freed")[
     if(color = red) [free-player red ]
     if(color = blue) [free-player blue]
@@ -349,10 +349,10 @@ if(stateChanged = true)[
   ]
  ]
  ]
- 
+
  if(blueRespawnFlag = true)[ respawn-blue-flags ]
  if(redRespawnFlag = true)[ respawn-red-flags ]
- 
+
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
@@ -611,19 +611,11 @@ HORIZONTAL
 @#$#@#$#@
 ## WHAT IS IT?
 
-<<<<<<< HEAD
-Capture the Flag game in which both teams have to capture the flag and return it too their own base. The first team to reach the key score wins the game, or the first time to imprison all members of the enemy team wins the game.
-
-## HOW IT WORKS
-
-Both turtles are assigned to teams and have different states depending on which actions they can take. Each player has their own state and this is determined by certain conditions such as if an enemy is close to the player they will evade, or if one of their team mates pick up the flag and their nearby, they'll move to there position to assist with the flag capture or if the enemy has taken their flag some team mates will be assigned the task of retrieving their flag before its captured.
-=======
 Capture the Flag game in which both teams have to capture the flag and return it too their own base. The players also have to capture other players and send them to jail when they are defending their flags. The game ends when one player has captured their flag or when all the other players are thrown in jail.
 
 ## HOW IT WORKS
 
-Both turtles are assigned to teams and have different states depending on which actions they can take. They are pre-assigned states at the start of the game and they act on one half attacks the fag and the other half defends the flag. The states randomly change as the game progresses.
->>>>>>> origin/master
+Both turtles are assigned to teams and have different states depending on which actions they can take. Each player has their own state and this is determined by certain conditions such as if an enemy is close to the player they will evade, or if one of their team mates pick up the flag and their nearby, they'll move to there position to assist with the flag capture or if the enemy has taken their flag some team mates will be assigned the task of retrieving their flag before its captured.
 
 The forest layout is generated at the start of a game along with a navigation mesh for pathfinding. As the game is re-setup the layout is randomly generated each time giving different obstacles for the AI to navigate through as they try to capture the flag and avoid enemy AI.
 
@@ -633,7 +625,7 @@ Pressing setup creates the game, go plays the game, player count sets up the num
 
 SETUP - This setups the game enviroment in preparation for when the "GO" button is clicked
 
-GO - Runs the game 
+GO - Runs the game
 
 PLAYER-COUNT (SLIDER) - Controls the amount of players in each team to be spawned into the game.
 
@@ -641,42 +633,31 @@ TREE-COUNT (SLIDER) - Controls the amount of trees that will be spawned into the
 
 COLOR-MESH (TOGGLE) -
 
-LABEL-NAVMESH (TOGGLE) - 
+LABEL-NAVMESH (TOGGLE) -
 
 SMOOTH-PATH (TOGGLE) -
 
-DRAW-PATH (TOGGLE) - 
+DRAW-PATH (TOGGLE) -
 
-NAVIGATION-DEMO (TOGGLE) - 
+NAVIGATION-DEMO (TOGGLE) -
 
 
 ## THINGS TO NOTICE
 
-<<<<<<< HEAD
 How the levels enviroment differs everytime the setup button is clicked and when the sliders are adjusted to increase the trees and player count of the world.
 
-How each player states change and how they react based on certain conditions. 
+How each player states change and how they react based on certain conditions.
 
 ## THINGS TO TRY
 
 Change the number of players.
+Change the speed of the players.
 Change the number of trees.
 Set up an navigation demo and then selecting a goal for the player to travel to.
 
 ## EXTENDING THE MODEL
 
 Adding in squad tactics so that team members can work together rather than determining their own state based on what's around them.
-=======
-Notice the random level generation as the players are randomly spawned next to the flag. The jails are randomly spawned in the same half of the map as the players are in and there is a river in the map that seperates the AI from each color depending on which team that each of them are in.
-
-## THINGS TO TRY
-
-Change the number of players, change the speed of the players, change the number of trees, set up an navigation demo and then selecting a goal for the player to travel to. By doing all of this you can see the game functioning to its fullest capacities.
-
-## EXTENDING THE MODEL
-
-If you can navigate through the code then you are doing well enough said.
->>>>>>> origin/master
 
 ## NETLOGO FEATURES
 
