@@ -1,6 +1,6 @@
 # Netlogo_Project
 
-A Team project composed of 4 programmers. Me and another programmer focused on imp,ementing the finite state machine. 
+A Team project composed of 4 programmers. Me and another programmer focused on implementing the finite state machine. 
 
 About:
 
